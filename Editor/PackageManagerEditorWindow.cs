@@ -35,6 +35,8 @@
         private string m_PackageName;
         private string m_RepositoryLink;
 
+        private bool[] m_IsPackageLoaded;
+
         private int m_SelectedPackageIndex = 0;
 
         #endregion
@@ -43,14 +45,6 @@
 
         [MenuItem ("FAITH/PackageManager")]
         public static void ShowWindow () {
-
-            string[] m_GUIDOfGitRepositoryInfo = AssetDatabase.FindAssets ("GitRepositoryInfo");
-
-            if (m_GUIDOfGitRepositoryInfo.Length > 0) {
-
-                string t_AssetPath = AssetDatabase.GUIDToAssetPath (m_GUIDOfGitRepositoryInfo[0]);
-                m_GitRepositoryInfo = (GitRepoInfo) AssetDatabase.LoadAssetAtPath (t_AssetPath, typeof (GitRepoInfo));
-            }
 
             m_PackageManagerEditorWindow = (PackageManagerEditorWindow) GetWindow<PackageManagerEditorWindow> ("Package Manager", typeof (PackageManagerEditorWindow));
 
@@ -92,9 +86,19 @@
 
         private void Initialization () {
 
+            string[] m_GUIDOfGitRepositoryInfo = AssetDatabase.FindAssets ("GitRepositoryInfo");
+
+            if (m_GUIDOfGitRepositoryInfo.Length > 0) {
+
+                string t_AssetPath = AssetDatabase.GUIDToAssetPath (m_GUIDOfGitRepositoryInfo[0]);
+                m_GitRepositoryInfo = (GitRepoInfo) AssetDatabase.LoadAssetAtPath (t_AssetPath, typeof (GitRepoInfo));
+            }
+
             m_SelectedPackageIndex = 0;
-            
-            string[] m_GUIDOfTickMarkIcon = AssetDatabase.FindAssets ("Icon_TickMark",new string[]{"Assets/com.faith.package_manager"});
+
+            CheckIfPackageIsLoaded ();
+
+            string[] m_GUIDOfTickMarkIcon = AssetDatabase.FindAssets ("Icon_TickMark", new string[] { "Assets/com.faith.package_manager" });
 
             if (m_GUIDOfTickMarkIcon.Length > 0) {
 
@@ -192,7 +196,7 @@
                             m_SelectedPackageIndex = i;
                         }
 
-                        GUILayout.Label (m_IconForTickMark, GUILayout.Width (20), GUILayout.Height (20));
+                        GUILayout.Label (m_IsPackageLoaded[i] ? m_IconForTickMark : new Texture2D (1, 1), GUILayout.Width (20), GUILayout.Height (20));
                     }
                     GUILayout.EndHorizontal ();
 
@@ -311,6 +315,107 @@
                 25
             );
             GUI.DrawTexture (t_RectTransformOfFooterPanel, m_BackgroundTextureOfFooter);
+
+            GUILayout.BeginArea (t_RectTransformOfFooterPanel); {
+
+                EditorGUILayout.BeginHorizontal (); {
+                    EditorGUILayout.BeginHorizontal (GUILayout.Width (180)); {
+                        GUILayout.Label (
+                            "Last update " + System.DateTime.Now,
+                            GUILayout.Width (150)
+                        );
+
+                        GUILayout.Button (
+                            m_IconForTickMark,
+                            GUILayout.Width (20),
+                            GUILayout.Height (20)
+                        );
+                    }
+                    EditorGUILayout.EndHorizontal ();
+
+                    EditorGUILayout.BeginHorizontal (GUILayout.Width (t_RectTransformOfFooterPanel.width - 360f)); {
+                        EditorGUILayout.LabelField ("");
+                    }
+                    EditorGUILayout.EndHorizontal ();
+
+                    EditorGUILayout.BeginHorizontal (GUILayout.Width (170)); {
+
+                        if (m_IsPackageLoaded[m_SelectedPackageIndex]) {
+                             if (GUILayout.Button ("Remove")){
+
+                             }
+                        } else {
+
+                            if (GUILayout.Button ("Import")) {
+
+                                if (!IsPackageLoaded (m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].name)) {
+
+                                    AddNewRepositoryToManifestJSON (
+                                        m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].name,
+                                        m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].repository.url
+                                    );
+
+                                    int t_NumberOfInternalDependencies = m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].internalDependencies.Count;
+                                    for (int i = 0; i < t_NumberOfInternalDependencies; i++) {
+                                        AddNewRepositoryToManifestJSON (
+                                            m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].internalDependencies[i].name,
+                                            m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].internalDependencies[i].url
+                                        );
+                                    }
+
+                                    int t_NumberOfExternalDependencies = m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].externalDependencies.Count;
+                                    for (int i = 0; i < t_NumberOfExternalDependencies; i++) {
+                                        AddNewRepositoryToManifestJSON (
+                                            m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].externalDependencies[i].name,
+                                            m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].externalDependencies[i].url
+                                        );
+                                    }
+
+                                    CheckIfPackageIsLoaded ();
+
+                                } else {
+                                    Debug.LogWarning ("The following package '" + m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].name + "' is already in the project");
+                                }
+                            }
+
+                        }
+
+                    }
+                    EditorGUILayout.EndHorizontal ();
+                }
+                EditorGUILayout.EndHorizontal ();
+
+            }
+            GUILayout.EndArea ();
+        }
+
+        #endregion
+
+        #region Configuretion 
+
+        private void CheckIfPackageIsLoaded () {
+
+            int t_NumberOfGitInfo = m_GitRepositoryInfo.gitInfos.Count;
+            m_IsPackageLoaded = new bool[t_NumberOfGitInfo];
+            for (int i = 0; i < t_NumberOfGitInfo; i++) {
+
+                m_IsPackageLoaded[i] = IsPackageLoaded (m_GitRepositoryInfo.gitInfos[i].name);
+            }
+        }
+
+        public bool IsPackageLoaded (string t_PackageRootFolder) {
+
+            string t_ModifiedDataPath = "";
+            string[] t_PathSplit = Application.dataPath.Split ('/');
+            int t_NumberOfSplitedPath = t_PathSplit.Length;
+            for (int i = 0; i < t_NumberOfSplitedPath - 1; i++) {
+                t_ModifiedDataPath += t_PathSplit[i] + "/";
+            }
+            t_ModifiedDataPath += "Library/PackageCache";
+            if (Directory.GetDirectories (t_ModifiedDataPath, t_PackageRootFolder + "*").Length > 0) {
+                return true;
+            }
+            return false;
         }
 
         #endregion
@@ -419,6 +524,10 @@
                 streamWrite.WriteLine ("}");
             }
             AssetDatabase.Refresh ();
+        }
+
+        private void RemoveRepositoryFromManifestJSON(string t_PackageName){
+            
         }
 
         #endregion
