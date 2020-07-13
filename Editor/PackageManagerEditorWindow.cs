@@ -341,9 +341,11 @@
                     EditorGUILayout.BeginHorizontal (GUILayout.Width (170)); {
 
                         if (m_IsPackageLoaded[m_SelectedPackageIndex]) {
-                             if (GUILayout.Button ("Remove")){
-
-                             }
+                            if (GUILayout.Button ("Remove")) {
+                                RemoveRepositoryFromManifestJSON (
+                                    m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].name,
+                                    m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].repository.url);
+                            }
                         } else {
 
                             if (GUILayout.Button ("Import")) {
@@ -471,14 +473,22 @@
 
                 string[] t_SplitByColon = t_ConcatinatedString.Split (':');
                 if (i == 0) {
+                    string t_PackageVersion = "";
+                    for (int k = 2; k < t_SplitByColon.Length; k++) {
+                        t_PackageVersion += t_SplitByColon[k];
+                    }
                     t_CurrentPackageInfo.Add (new PackageInfo () {
                         packageLink = t_SplitByColon[1],
-                            packageVersion = t_SplitByColon[2]
+                            packageVersion = t_PackageVersion
                     });
                 } else {
+                    string t_PackageVersion = "";
+                    for (int k = 1; k < t_SplitByColon.Length; k++) {
+                        t_PackageVersion += t_SplitByColon[k];
+                    }
                     t_CurrentPackageInfo.Add (new PackageInfo () {
                         packageLink = t_SplitByColon[0],
-                            packageVersion = t_SplitByColon[1]
+                            packageVersion = t_PackageVersion
                     });
                 }
 
@@ -496,7 +506,7 @@
                 int t_NumberOfPackage = t_CurrentPackageInfo.Count;
                 for (int i = 0; i < t_NumberOfPackage; i++) {
 
-                    if (t_CurrentPackageInfo[i].packageLink == t_PackageName)
+                    if (t_CurrentPackageInfo[i].packageLink.Contains(t_PackageName))
                         t_IsRepositoryAlreadyAdded = true;
 
                     streamWrite.WriteLine (
@@ -526,8 +536,110 @@
             AssetDatabase.Refresh ();
         }
 
-        private void RemoveRepositoryFromManifestJSON(string t_PackageName){
-            
+        private void RemoveRepositoryFromManifestJSON (string t_PackageName, string t_RepositoryLink) {
+
+            string t_StreamingAssetPath = Application.streamingAssetsPath;
+            string[] t_Split = t_StreamingAssetPath.Split ('/');
+            string t_ManifestPath = "";
+
+            int t_NumberOfSplit = t_Split.Length - 2;
+            for (int i = 0; i < t_NumberOfSplit; i++) {
+
+                t_ManifestPath += t_Split[i];
+                t_ManifestPath += "/";
+            }
+            t_ManifestPath += m_NameOfManifestDirectory;
+            t_ManifestPath += "/";
+            t_ManifestPath += "manifest.json"; //"manifest.json"; 
+
+            string t_Result = System.IO.File.ReadAllText (t_ManifestPath);
+
+            //Extracting    :   Package
+            string[] t_SplitByComa = t_Result.Split (',');
+            t_NumberOfSplit = t_SplitByComa.Length;
+            List<PackageInfo> t_CurrentPackageInfo = new List<PackageInfo> ();
+
+            for (int i = 0; i < t_NumberOfSplit; i++) {
+
+                string t_ConcatinatedString = "";
+                List<char> t_Converted = t_SplitByComa[i].ToList ();
+                int t_NumberOfCharacter = t_Converted.Count;
+                for (int j = 0; j < t_NumberOfCharacter;) {
+
+                    if (t_Converted[j] == ' ' ||
+                        t_Converted[j] == '{' ||
+                        t_Converted[j] == '}' ||
+                        t_Converted[j] == '\t' ||
+                        t_Converted[j] == '\n') {
+
+                        t_Converted.RemoveAt (j);
+                        t_Converted.TrimExcess ();
+
+                        t_NumberOfCharacter--;
+                    } else {
+
+                        t_ConcatinatedString += t_Converted[j];
+                        j++;
+                    }
+                }
+
+                string[] t_SplitByColon = t_ConcatinatedString.Split (':');
+                if (i == 0) {
+                    string t_PackageVersion = "";
+                    for (int k = 2; k < t_SplitByColon.Length; k++) {
+                        t_PackageVersion += t_SplitByColon[k];
+                    }
+                    t_CurrentPackageInfo.Add (new PackageInfo () {
+                        packageLink = t_SplitByColon[1],
+                            packageVersion = t_PackageVersion
+                    });
+                } else {
+                    string t_PackageVersion = "";
+                    for (int k = 1; k < t_SplitByColon.Length; k++) {
+                        t_PackageVersion += t_SplitByColon[k];
+                    }
+                    t_CurrentPackageInfo.Add (new PackageInfo () {
+                        packageLink = t_SplitByColon[0],
+                            packageVersion = t_PackageVersion
+                    });
+                }
+
+                //Debug.Log (t_CurrentPackageInfo[t_CurrentPackageInfo.Count - 1].packageLink + " : " + t_CurrentPackageInfo[t_CurrentPackageInfo.Count - 1].packageVersion);
+            }
+
+            //WritingPackage
+            using (StreamWriter streamWrite = new StreamWriter (t_ManifestPath)) {
+
+                streamWrite.WriteLine ("{");
+                streamWrite.WriteLine ("\t\"dependencies\":{");
+
+                int t_NumberOfPackage = t_CurrentPackageInfo.Count;
+                for (int i = 0; i < t_NumberOfPackage; i++) {
+                    
+                    Debug.Log("PackageLink(" + i + "): "+ t_CurrentPackageInfo[i].packageLink + " -> " + t_PackageName);
+                    if (!t_CurrentPackageInfo[i].packageLink.Contains(t_PackageName)){
+
+                        string t_ManifestInfo = 
+                        t_CurrentPackageInfo[i].packageLink +
+                        " : " +
+                        t_CurrentPackageInfo[i].packageVersion;
+                        if((i + 1) == (t_NumberOfPackage - 1)){
+                            
+                            if(!t_CurrentPackageInfo[i + 1].packageLink.Contains(t_PackageName))
+                                t_ManifestInfo += ",";
+                            
+                        }else{
+                            t_ManifestInfo += ",";
+                        }
+
+                        streamWrite.Write(t_ManifestInfo);
+                    }
+                }
+
+                streamWrite.WriteLine ("\t}");
+                streamWrite.WriteLine ("}");
+            }
+            AssetDatabase.Refresh ();
         }
 
         #endregion
