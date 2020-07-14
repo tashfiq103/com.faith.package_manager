@@ -96,7 +96,7 @@
 
             m_SelectedPackageIndex = 0;
 
-            CheckIfPackageIsLoaded ();
+            UpdatePackageLoadedInfo ();
 
             string[] m_GUIDOfTickMarkIcon = AssetDatabase.FindAssets ("Icon_TickMark", new string[] { "Assets/com.faith.package_manager" });
 
@@ -342,65 +342,32 @@
 
                         if (m_IsPackageLoaded[m_SelectedPackageIndex]) {
                             if (GUILayout.Button ("Remove")) {
-                                RemoveRepositoryFromManifestJSON (
-                                    m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].name,
-                                    m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].repository.url);
+                                List<PackageInfo> t_ListOfPackageInfo = GetPackageURLs (m_SelectedPackageIndex);
+                                List<string> t_ListOfPackageName = new List<string> ();
+                                int t_NumberOfPackageInfo = t_ListOfPackageInfo.Count;
+                                for (int i = 0; i < t_NumberOfPackageInfo; i++) {
+                                    t_ListOfPackageName.Add (t_ListOfPackageInfo[i].packageName);
+                                }
+                                RemoveRepositoriesFromManifestJSON (t_ListOfPackageName);
                             }
                         } else {
 
                             if (GUILayout.Button ("Import")) {
 
-                                if (!IsPackageLoaded (m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].name)) {
+                                List<PackageInfo> t_ListOfPackageInfo = GetPackageURLs (m_SelectedPackageIndex);
+                                int t_NumberOfPackageInfo = t_ListOfPackageInfo.Count;
+                                for (int i = 0; i < t_NumberOfPackageInfo; i++) {
 
-                                    List<PackageInfo> t_ListOfPackageInfo = new List<PackageInfo> ();
-
-                                    int t_NumberOfInternalDependencies = m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].internalDependencies.Count;
-                                    for (int i = 0; i < t_NumberOfInternalDependencies; i++) {
-
-                                        if (!IsPackageLoaded (m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].internalDependencies[i].name)) {
-                                            t_ListOfPackageInfo.Add (new PackageInfo () {
-                                                packageName = m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].internalDependencies[i].name,
-                                                    packageURL = m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].internalDependencies[i].url
-                                            });
-                                        }
-
-                                        // AddNewRepositoryToManifestJSON (
-                                        //     m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].internalDependencies[i].name,
-                                        //     m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].internalDependencies[i].url
-                                        // );
+                                    if (IsPackageLoadedInDirectory (t_ListOfPackageInfo[i].packageName)) {
+                                        t_ListOfPackageInfo.RemoveAt (i);
+                                        t_ListOfPackageInfo.TrimExcess ();
+                                        t_NumberOfPackageInfo--;
+                                        i--;
                                     }
-
-                                    int t_NumberOfExternalDependencies = m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].externalDependencies.Count;
-                                    for (int i = 0; i < t_NumberOfExternalDependencies; i++) {
-
-                                        if (!IsPackageLoaded (m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].externalDependencies[i].name)) {
-                                            t_ListOfPackageInfo.Add (new PackageInfo () {
-                                                packageName = m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].externalDependencies[i].name,
-                                                packageURL = m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].externalDependencies[i].url
-                                            });
-                                        }
-
-                                        // AddNewRepositoryToManifestJSON (
-                                        //     m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].externalDependencies[i].name,
-                                        //     m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].externalDependencies[i].url
-                                        // );
-                                    }
-
-                                    t_ListOfPackageInfo.Add(new PackageInfo(){
-                                        packageName = m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].name,
-                                        packageURL = m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].repository.url
-                                    });
-
-                                    // AddNewRepositoryToManifestJSON (
-                                    //     m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].name,
-                                    //     m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].repository.url
-                                    // );
-
-                                    CheckIfPackageIsLoaded ();
-
-                                } else {
-                                    Debug.LogWarning ("The following package '" + m_GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].name + "' is already in the project");
                                 }
+
+                                if (t_NumberOfPackageInfo > 0)
+                                    AddNewRepositoriesToManifestJSON (t_ListOfPackageInfo);
                             }
 
                         }
@@ -418,17 +385,17 @@
 
         #region Configuretion 
 
-        private void CheckIfPackageIsLoaded () {
+        private void UpdatePackageLoadedInfo () {
 
             int t_NumberOfGitInfo = m_GitRepositoryInfo.gitInfos.Count;
             m_IsPackageLoaded = new bool[t_NumberOfGitInfo];
             for (int i = 0; i < t_NumberOfGitInfo; i++) {
 
-                m_IsPackageLoaded[i] = IsPackageLoaded (m_GitRepositoryInfo.gitInfos[i].name);
+                m_IsPackageLoaded[i] = IsPackageLoadedInDirectory (m_GitRepositoryInfo.gitInfos[i].name);
             }
         }
 
-        public bool IsPackageLoaded (string t_PackageRootFolder) {
+        public bool IsPackageLoadedInDirectory (string t_PackageRootFolder) {
 
             string t_ModifiedDataPath = "";
             string[] t_PathSplit = Application.dataPath.Split ('/');
@@ -443,11 +410,108 @@
             return false;
         }
 
+        private string RemoveUnwantedChar (string t_String) {
+
+            string t_ConcatinatedString = "";
+            List<char> t_Converted = t_String.ToList ();
+            int t_NumberOfCharacter = t_Converted.Count;
+            for (int j = 0; j < t_NumberOfCharacter;) {
+
+                int t_Ascii = System.Convert.ToInt32 (t_Converted[j]);
+                if (t_Ascii >= 0 && t_Ascii <= 31 ||
+                    t_Converted[j] == ' ' ||
+                    t_Converted[j] == '{' ||
+                    t_Converted[j] == '}' ||
+                    t_Converted[j] == '\t' ||
+                    t_Converted[j] == '\n') {
+
+                    t_Converted.RemoveAt (j);
+                    t_Converted.TrimExcess ();
+
+                    t_NumberOfCharacter--;
+                } else {
+                    t_ConcatinatedString += t_Converted[j];
+                    j++;
+                }
+            }
+
+            return t_ConcatinatedString;
+        }
+
+        private bool IsValidPackageIndex (int t_PackageIndex) {
+
+            if (t_PackageIndex >= 0 && t_PackageIndex < m_GitRepositoryInfo.gitInfos.Count)
+                return true;
+
+            Debug.LogError ("Invalid package index : " + t_PackageIndex);
+            return false;
+        }
+
+        private bool IsValidPackageName (string t_PackageName) {
+
+            int t_NumberOfGitReposityory = m_GitRepositoryInfo.gitInfos.Count;
+            for (int i = 0; i < t_NumberOfGitReposityory; i++) {
+
+                if (t_PackageName == m_GitRepositoryInfo.gitInfos[i].name)
+                    return true;
+            }
+
+            Debug.LogError ("Invalid package name : " + t_PackageName);
+            return false;
+        }
+
+        private List<PackageInfo> GetPackageURLs (string t_PackageName) {
+
+            if (IsValidPackageName (t_PackageName)) {
+                int t_NumberOfGitReposityory = m_GitRepositoryInfo.gitInfos.Count;
+                for (int i = 0; i < t_NumberOfGitReposityory; i++) {
+
+                    if (t_PackageName == m_GitRepositoryInfo.gitInfos[i].name)
+                        return GetPackageURLs (i);
+                }
+            }
+
+            return null;
+        }
+
+        private List<PackageInfo> GetPackageURLs (int t_PackageIndex) {
+
+            if (IsValidPackageIndex (t_PackageIndex)) {
+
+                List<PackageInfo> t_ListOfPackageInfo = new List<PackageInfo> ();
+
+                int t_NumberOfInternalDependencies = m_GitRepositoryInfo.gitInfos[t_PackageIndex].internalDependencies.Count;
+                for (int i = 0; i < t_NumberOfInternalDependencies; i++) {
+                    t_ListOfPackageInfo.Add (new PackageInfo () {
+                        packageName = m_GitRepositoryInfo.gitInfos[t_PackageIndex].internalDependencies[i].name,
+                            packageURL = m_GitRepositoryInfo.gitInfos[t_PackageIndex].internalDependencies[i].url
+                    });
+                }
+
+                int t_NumberOfExternalDependencies = m_GitRepositoryInfo.gitInfos[t_PackageIndex].externalDependencies.Count;
+                for (int i = 0; i < t_NumberOfExternalDependencies; i++) {
+                    t_ListOfPackageInfo.Add (new PackageInfo () {
+                        packageName = m_GitRepositoryInfo.gitInfos[t_PackageIndex].externalDependencies[i].name,
+                            packageURL = m_GitRepositoryInfo.gitInfos[t_PackageIndex].externalDependencies[i].url
+                    });
+                }
+
+                t_ListOfPackageInfo.Add (new PackageInfo () {
+                    packageName = m_GitRepositoryInfo.gitInfos[t_PackageIndex].name,
+                        packageURL = m_GitRepositoryInfo.gitInfos[t_PackageIndex].repository.url
+                });
+
+                return t_ListOfPackageInfo;
+            }
+
+            return null;
+        }
+
         #endregion
 
         #region Configuretion   :   Reading/Writing manifest.json
 
-        private void AddNewRepositoryListToManifestJSON (string t_PackageName, string t_RepositoryLink) {
+        private void AddNewRepositoriesToManifestJSON (List<PackageInfo> t_ListOfPackageInfo) {
 
             string t_StreamingAssetPath = Application.streamingAssetsPath;
             string[] t_Split = t_StreamingAssetPath.Split ('/');
@@ -463,46 +527,24 @@
             t_ManifestPath += "/";
             t_ManifestPath += "manifest.json"; //"manifest.json"; 
 
-            string t_Result = System.IO.File.ReadAllText (t_ManifestPath);
-
             //Extracting    :   Package
+            string t_Result = System.IO.File.ReadAllText (t_ManifestPath);
             string[] t_SplitByComa = t_Result.Split (',');
             t_NumberOfSplit = t_SplitByComa.Length;
             List<PackageInfo> t_CurrentPackageInfo = new List<PackageInfo> ();
 
             for (int i = 0; i < t_NumberOfSplit; i++) {
 
-                string t_ConcatinatedString = "";
-                List<char> t_Converted = t_SplitByComa[i].ToList ();
-                int t_NumberOfCharacter = t_Converted.Count;
-                for (int j = 0; j < t_NumberOfCharacter;) {
-
-                    if (t_Converted[j] == ' ' ||
-                        t_Converted[j] == '{' ||
-                        t_Converted[j] == '}' ||
-                        t_Converted[j] == '\t' ||
-                        t_Converted[j] == '\n') {
-
-                        t_Converted.RemoveAt (j);
-                        t_Converted.TrimExcess ();
-
-                        t_NumberOfCharacter--;
-                    } else {
-
-                        t_ConcatinatedString += t_Converted[j];
-                        j++;
-                    }
-                }
-
-                string[] t_SplitByColon = t_ConcatinatedString.Split (':');
+                string t_CleanString = RemoveUnwantedChar (t_SplitByComa[i]);
+                string[] t_SplitByColon = t_CleanString.Split (':');
                 if (i == 0) {
                     string t_PackageVersion = "";
                     for (int k = 2; k < t_SplitByColon.Length; k++) {
                         t_PackageVersion += ((k > 2 ? ":" : "") + t_SplitByColon[k]);
                     }
                     t_CurrentPackageInfo.Add (new PackageInfo () {
-                        packageName = t_SplitByColon[1],
-                            packageURL = t_PackageVersion
+                        packageName = RemoveUnwantedChar (t_SplitByColon[1]),
+                            packageURL = RemoveUnwantedChar (t_PackageVersion)
                     });
                 } else {
                     string t_PackageVersion = "";
@@ -510,12 +552,10 @@
                         t_PackageVersion += ((k > 1 ? ":" : "") + t_SplitByColon[k]);
                     }
                     t_CurrentPackageInfo.Add (new PackageInfo () {
-                        packageName = t_SplitByColon[0],
-                            packageURL = t_PackageVersion
+                        packageName = RemoveUnwantedChar (t_SplitByColon[0]),
+                            packageURL = RemoveUnwantedChar (t_PackageVersion)
                     });
                 }
-
-                Debug.Log (t_CurrentPackageInfo[t_CurrentPackageInfo.Count - 1].packageName + " : " + t_CurrentPackageInfo[t_CurrentPackageInfo.Count - 1].packageURL);
             }
 
             //WritingPackage
@@ -526,11 +566,19 @@
                 streamWrite.WriteLine ("{");
                 streamWrite.WriteLine ("\t\"dependencies\":{");
 
+                int t_NumberOfPackageToBeAdded = t_ListOfPackageInfo.Count;
                 int t_NumberOfPackage = t_CurrentPackageInfo.Count;
                 for (int i = 0; i < t_NumberOfPackage; i++) {
 
-                    if (t_CurrentPackageInfo[i].packageName.Contains (t_PackageName))
-                        t_IsRepositoryAlreadyAdded = true;
+                    for (int j = 0; j < t_NumberOfPackageToBeAdded; j++) {
+
+                        if (t_CurrentPackageInfo[i].packageName.Contains (t_ListOfPackageInfo[j].packageName)) {
+
+                            t_ListOfPackageInfo.RemoveAt (j);
+                            t_NumberOfPackageToBeAdded--;
+                            break;
+                        }
+                    }
 
                     streamWrite.WriteLine (
                         "\t\t" +
@@ -540,27 +588,29 @@
                         ((i == (t_NumberOfPackage - 1)) ? (t_IsRepositoryAlreadyAdded ? "" : ",") : ","));
                 }
 
-                if (!t_IsRepositoryAlreadyAdded) {
+                for (int i = 0; i < t_NumberOfPackageToBeAdded; i++) {
 
                     streamWrite.WriteLine (
                         "\t\t" +
                         "\"" +
-                        t_PackageName +
+                        t_ListOfPackageInfo[i].packageName +
                         "\"" +
                         " : " +
                         "\"git+" +
-                        t_RepositoryLink +
-                        "\"");
+                        t_ListOfPackageInfo[i].packageURL +
+                        "\"" +
+                        ((i == (t_NumberOfPackageToBeAdded - 1)) ? "" : ","));
                 }
 
                 streamWrite.WriteLine ("\t}");
                 streamWrite.WriteLine ("}");
             }
             AssetDatabase.Refresh ();
+
+            UpdatePackageLoadedInfo ();
         }
 
-
-        private void AddNewRepositoryToManifestJSON (string t_PackageName, string t_RepositoryLink) {
+        private void RemoveRepositoriesFromManifestJSON (List<string> t_ListOfPackageName) {
 
             string t_StreamingAssetPath = Application.streamingAssetsPath;
             string[] t_Split = t_StreamingAssetPath.Split ('/');
@@ -585,37 +635,16 @@
 
             for (int i = 0; i < t_NumberOfSplit; i++) {
 
-                string t_ConcatinatedString = "";
-                List<char> t_Converted = t_SplitByComa[i].ToList ();
-                int t_NumberOfCharacter = t_Converted.Count;
-                for (int j = 0; j < t_NumberOfCharacter;) {
-
-                    if (t_Converted[j] == ' ' ||
-                        t_Converted[j] == '{' ||
-                        t_Converted[j] == '}' ||
-                        t_Converted[j] == '\t' ||
-                        t_Converted[j] == '\n') {
-
-                        t_Converted.RemoveAt (j);
-                        t_Converted.TrimExcess ();
-
-                        t_NumberOfCharacter--;
-                    } else {
-
-                        t_ConcatinatedString += t_Converted[j];
-                        j++;
-                    }
-                }
-
-                string[] t_SplitByColon = t_ConcatinatedString.Split (':');
+                string t_CleanString = RemoveUnwantedChar (t_SplitByComa[i]);
+                string[] t_SplitByColon = t_CleanString.Split (':');
                 if (i == 0) {
                     string t_PackageVersion = "";
                     for (int k = 2; k < t_SplitByColon.Length; k++) {
                         t_PackageVersion += ((k > 2 ? ":" : "") + t_SplitByColon[k]);
                     }
                     t_CurrentPackageInfo.Add (new PackageInfo () {
-                        packageName = t_SplitByColon[1],
-                            packageURL = t_PackageVersion
+                        packageName = RemoveUnwantedChar (t_SplitByColon[1]),
+                            packageURL = RemoveUnwantedChar (t_PackageVersion)
                     });
                 } else {
                     string t_PackageVersion = "";
@@ -623,51 +652,56 @@
                         t_PackageVersion += ((k > 1 ? ":" : "") + t_SplitByColon[k]);
                     }
                     t_CurrentPackageInfo.Add (new PackageInfo () {
-                        packageName = t_SplitByColon[0],
-                            packageURL = t_PackageVersion
+                        packageName = RemoveUnwantedChar (t_SplitByColon[0]),
+                            packageURL = RemoveUnwantedChar (t_PackageVersion)
                     });
                 }
 
-                Debug.Log (t_CurrentPackageInfo[t_CurrentPackageInfo.Count - 1].packageName + " : " + t_CurrentPackageInfo[t_CurrentPackageInfo.Count - 1].packageURL);
             }
 
             //WritingPackage
             using (StreamWriter streamWrite = new StreamWriter (t_ManifestPath)) {
 
-                bool t_IsRepositoryAlreadyAdded = false;
-
-                streamWrite.WriteLine ("{");
-                streamWrite.WriteLine ("\t\"dependencies\":{");
+                string t_NewManifest = "{\n";
+                t_NewManifest += "\t\"dependencies\":{\n";
 
                 int t_NumberOfPackage = t_CurrentPackageInfo.Count;
+                int t_NumberOfPackageToBeRemoved = t_ListOfPackageName.Count;
                 for (int i = 0; i < t_NumberOfPackage; i++) {
 
-                    if (t_CurrentPackageInfo[i].packageName.Contains (t_PackageName))
-                        t_IsRepositoryAlreadyAdded = true;
+                    bool t_IsThisPackageToBeRemoved = false;
+                    for (int j = 0; j < t_NumberOfPackageToBeRemoved; j++) {
 
-                    streamWrite.WriteLine (
-                        "\t\t" +
-                        t_CurrentPackageInfo[i].packageName +
-                        " : " +
-                        t_CurrentPackageInfo[i].packageURL +
-                        ((i == (t_NumberOfPackage - 1)) ? (t_IsRepositoryAlreadyAdded ? "" : ",") : ","));
+                        if (t_CurrentPackageInfo[i].packageName.Contains (t_ListOfPackageName[j])) {
+
+                            t_ListOfPackageName.RemoveAt (j);
+                            t_ListOfPackageName.TrimExcess ();
+                            t_NumberOfPackageToBeRemoved--;
+
+                            t_IsThisPackageToBeRemoved = true;
+                            break;
+                        }
+                    }
+
+                    if (!t_IsThisPackageToBeRemoved) {
+
+                        t_NewManifest +=
+                            "\t\t" +
+                            t_CurrentPackageInfo[i].packageName +
+                            " : " +
+                            t_CurrentPackageInfo[i].packageURL + 
+                            ",\n";
+                    }
                 }
 
-                if (!t_IsRepositoryAlreadyAdded) {
+                List<char> t_ConvertionFromStringToChar = t_NewManifest.ToList ();
+                int t_NumberOfCharacter = t_ConvertionFromStringToChar.Count;
+                t_ConvertionFromStringToChar.RemoveAt (t_NumberOfCharacter - 2);
+                t_ConvertionFromStringToChar.TrimExcess ();
+                t_NewManifest = new string(t_ConvertionFromStringToChar.ToArray());
 
-                    streamWrite.WriteLine (
-                        "\t\t" +
-                        "\"" +
-                        t_PackageName +
-                        "\"" +
-                        " : " +
-                        "\"git+" +
-                        t_RepositoryLink +
-                        "\"");
-                }
-
-                streamWrite.WriteLine ("\t}");
-                streamWrite.WriteLine ("}");
+                t_NewManifest += "\t}\n}\n";
+                streamWrite.Write (t_NewManifest);
             }
             AssetDatabase.Refresh ();
         }
@@ -739,8 +773,6 @@
                             packageURL = t_PackageVersion
                     });
                 }
-
-                //Debug.Log (t_CurrentPackageInfo[t_CurrentPackageInfo.Count - 1].packageLink + " : " + t_CurrentPackageInfo[t_CurrentPackageInfo.Count - 1].packageVersion);
             }
 
             //WritingPackage
@@ -752,7 +784,6 @@
                 int t_NumberOfPackage = t_CurrentPackageInfo.Count;
                 for (int i = 0; i < t_NumberOfPackage; i++) {
 
-                    Debug.Log ("PackageLink(" + i + "): " + t_CurrentPackageInfo[i].packageName + " -> " + t_PackageName);
                     if (!t_CurrentPackageInfo[i].packageName.Contains (t_PackageName)) {
 
                         string t_ManifestInfo =
