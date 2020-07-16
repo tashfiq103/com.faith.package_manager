@@ -1,0 +1,17 @@
+{
+    "name": "com.faith.package_manager.Editor",
+    "references": [
+        "GUID:115e73b2eb3621f4caf8fd406702fe7d"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
