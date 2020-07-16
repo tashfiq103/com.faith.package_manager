@@ -65,10 +65,10 @@ MonoBehaviour:
     description: AI behaviour in gameplay
     unityDependencies: []
     internalDependencies:
-    - displayName: MathLibrary
+    - displayName: Gameplay
       version: 0.1.0
-      name: com.faith.math
-      url: https://github.com/tashfiq103/com.faith.math.git
+      name: com.faith.gameplay
+      url: https://github.com/tashfiq103/com.faith.gameplay.git
     externalDependencies: []
     repository:
       type: 0

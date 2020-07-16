@@ -90,16 +90,16 @@
             IS_IN_DEVELOPMENT_MODE = IsRepositoryInAssetFolder ("com.faith.packagemanager");
 
             m_SelectedPackageIndex = 0;
-            
+
             if (IS_IN_DEVELOPMENT_MODE) {
 
-                GitRepositoryInfo = (GitRepoInfo) AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("GitRepositoryInfo",new string[] {"Assets/com.faith.packagemanager"})[0]), typeof (GitRepoInfo));
-                
+                GitRepositoryInfo = (GitRepoInfo) AssetDatabase.LoadAssetAtPath (AssetDatabase.GUIDToAssetPath (AssetDatabase.FindAssets ("GitRepositoryInfo", new string[] { "Assets/com.faith.packagemanager" }) [0]), typeof (GitRepoInfo));
+
                 m_IconForTickMark = GetTexture ("Icon_TickMark", "Assets/com.faith.packagemanager");
                 m_IconForDownload = GetTexture ("Icon_Download", "Assets/com.faith.packagemanager");
             } else {
 
-                GitRepositoryInfo = (GitRepoInfo) AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("GitRepositoryInfo",new string[]{"Packages/com.faith.packagemanager"})[0]), typeof (GitRepoInfo));
+                GitRepositoryInfo = (GitRepoInfo) AssetDatabase.LoadAssetAtPath (AssetDatabase.GUIDToAssetPath (AssetDatabase.FindAssets ("GitRepositoryInfo", new string[] { "Packages/com.faith.packagemanager" }) [0]), typeof (GitRepoInfo));
 
                 m_IconForTickMark = GetTexture ("Icon_TickMark", "Packages/com.faith.packagemanager");
                 m_IconForDownload = GetTexture ("Icon_Download", "Packages/com.faith.packagemanager");
@@ -372,19 +372,19 @@
 
                         if (m_IsPackageLoaded[m_SelectedPackageIndex]) {
                             if (GUILayout.Button ("Remove")) {
-                                
-                                if(!IsFollowingRepositoryHasDependencyOnOtherRepository(m_SelectedPackageIndex)){
 
-                                    OnRemoveButtonPressed();
-                                }else{
-                                    
+                                if (!IsFollowingRepositoryHasDependencyOnOtherRepository (m_SelectedPackageIndex)) {
+
+                                    OnRemoveButtonPressed ();
+                                } else {
+
                                     string t_Message = "Please remove the following repository before you remove this one\n";
-                                    string[] t_RepositoryNameWhichHasDependencies = GetListOfRepositoryNameThatDependOnFollowingRepository(m_SelectedPackageIndex).ToArray();
+                                    string[] t_RepositoryNameWhichHasDependencies = GetListOfRepositoryNameThatDependOnFollowingRepository (m_SelectedPackageIndex).ToArray ();
                                     int t_NumberOfRepository = t_RepositoryNameWhichHasDependencies.Length;
-                                    for(int i = 0 ; i < t_NumberOfRepository; i++){
+                                    for (int i = 0; i < t_NumberOfRepository; i++) {
                                         t_Message += t_RepositoryNameWhichHasDependencies[i] + ((i == (t_NumberOfRepository - 1)) ? "" : "\n");
                                     }
-                                    EditorUtility.DisplayDialog(
+                                    EditorUtility.DisplayDialog (
                                         GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].displayName + "' has dependency!",
                                         t_Message,
                                         "Got It!"
@@ -395,7 +395,7 @@
 
                             if (GUILayout.Button ("Import")) {
 
-                                OnImportButtonPressed();
+                                OnImportButtonPressed ();
                             }
 
                         }
@@ -443,15 +443,15 @@
 
             string[] t_Directories = Directory.GetDirectories (t_ModifiedDataPath, t_FolderName + "*");
             if (t_Directories.Length > 0) {
-                
-                List<char> t_Characters = t_Directories[0].ToList();
+
+                List<char> t_Characters = t_Directories[0].ToList ();
                 int t_NumberOfCharacter = t_Characters.Count;
-                for(int i = 0 ; i < t_NumberOfCharacter; i++){
-                    if(t_Characters[i] == '\\'){
+                for (int i = 0; i < t_NumberOfCharacter; i++) {
+                    if (t_Characters[i] == '\\') {
                         t_Characters[i] = '/';
                     }
                 }
-                string t_NewDirectory = new string(t_Characters.ToArray());
+                string t_NewDirectory = new string (t_Characters.ToArray ());
 
                 return t_NewDirectory;
             }
@@ -484,22 +484,22 @@
 
             return t_ConcatinatedString;
         }
-        private List<string> GetListOfRepositoryNameThatDependOnFollowingRepository(int t_RepositoryIndex){
+        private List<string> GetListOfRepositoryNameThatDependOnFollowingRepository (int t_RepositoryIndex) {
 
-            List<string> t_ListOfRepositoryNameWhichHasDependency = new List<string>();
+            List<string> t_ListOfRepositoryNameWhichHasDependency = new List<string> ();
             string t_RepositoryName = GitRepositoryInfo.gitInfos[t_RepositoryIndex].name;
             int t_NumberOfGitRepositoryInfo = GitRepositoryInfo.gitInfos.Count;
-            for(int i = 0 ; i < t_NumberOfGitRepositoryInfo; i++){
+            for (int i = 0; i < t_NumberOfGitRepositoryInfo; i++) {
 
-                if(i != t_RepositoryIndex){
+                if (i != t_RepositoryIndex) {
                     int t_NumberOfInternalDependencies = GitRepositoryInfo.gitInfos[i].internalDependencies.Count;
-                    for(int j = 0 ; j < t_NumberOfInternalDependencies ; j++){
+                    for (int j = 0; j < t_NumberOfInternalDependencies; j++) {
 
-                        if(GitRepositoryInfo.gitInfos[i].internalDependencies[j].name.Contains(t_RepositoryName)){
-                            t_ListOfRepositoryNameWhichHasDependency.Add(GitRepositoryInfo.gitInfos[i].displayName + " : " + GitRepositoryInfo.gitInfos[i].name);
+                        if (GitRepositoryInfo.gitInfos[i].internalDependencies[j].name.Contains (t_RepositoryName)) {
+                            t_ListOfRepositoryNameWhichHasDependency.Add (GitRepositoryInfo.gitInfos[i].displayName + " : " + GitRepositoryInfo.gitInfos[i].name);
                         }
                     }
-                    
+
                 }
             }
 
@@ -516,24 +516,20 @@
         }
         private bool IsRepositoryInAssetFolder (string t_PackageName) {
 
-            string[] t_Directories = AssetDatabase.FindAssets(t_PackageName, new string[]{"Assets"});
+            string[] t_Directories = AssetDatabase.FindAssets (t_PackageName, new string[] { "Assets" });
             if (t_Directories.Length > 0) {
                 return true;
             }
             return false;
         }
         private bool IsRepositoryInPackageFolder (string t_PackageName) {
-
-            string t_ModifiedDataPath = "";
-            string[] t_PathSplit = Application.dataPath.Split ('/');
-            int t_NumberOfSplitedPath = t_PathSplit.Length;
-            for (int i = 0; i < t_NumberOfSplitedPath - 1; i++) {
-                t_ModifiedDataPath += t_PathSplit[i] + "/";
-            }
-            t_ModifiedDataPath += "Library/PackageCache/";
-            string[] t_Directories = Directory.GetDirectories (t_ModifiedDataPath, t_PackageName + "*");
-            if (t_Directories.Length > 0) {
-                return true;
+            
+            string[] t_AssetsPath = AssetDatabase.FindAssets(t_PackageName);
+            foreach(string t_AssetPath in t_AssetsPath){
+                string[] t_Split = AssetDatabase.GUIDToAssetPath(t_AssetPath).Split('/');
+                if(t_PackageName + ".asmdef" == t_Split[t_Split.Length - 1])
+                    return true;
+                
             }
             return false;
         }
@@ -557,21 +553,21 @@
             Debug.LogError ("Invalid package name : " + t_PackageName);
             return false;
         }
-        private bool IsFollowingRepositoryHasDependencyOnOtherRepository(int t_PackageIndex){
+        private bool IsFollowingRepositoryHasDependencyOnOtherRepository (int t_PackageIndex) {
 
             string t_RepositoryName = GitRepositoryInfo.gitInfos[t_PackageIndex].name;
             int t_NumberOfGitRepositoryInfo = GitRepositoryInfo.gitInfos.Count;
-            for(int i = 0 ; i < t_NumberOfGitRepositoryInfo; i++){
+            for (int i = 0; i < t_NumberOfGitRepositoryInfo; i++) {
 
-                if(i != t_PackageIndex){
+                if (i != t_PackageIndex && IsRepositoryInPackageFolder(GitRepositoryInfo.gitInfos[i].name)) {
                     int t_NumberOfInternalDependencies = GitRepositoryInfo.gitInfos[i].internalDependencies.Count;
-                    for(int j = 0 ; j < t_NumberOfInternalDependencies ; j++){
+                    for (int j = 0; j < t_NumberOfInternalDependencies; j++) {
 
-                        if(GitRepositoryInfo.gitInfos[i].internalDependencies[j].name.Contains(t_RepositoryName)){
+                        if (IsRepositoryInPackageFolder(t_RepositoryName) && GitRepositoryInfo.gitInfos[i].internalDependencies[j].name.Contains (t_RepositoryName)) {
                             return true;
                         }
                     }
-                    
+
                 }
             }
 
@@ -600,7 +596,7 @@
                 for (int i = 0; i < t_NumberOfInternalDependencies; i++) {
                     t_ListOfPackageInfo.Add (new PackageInfo () {
                         packageName = GitRepositoryInfo.gitInfos[t_PackageIndex].internalDependencies[i].name,
-                            packageURL = GitRepositoryInfo.gitInfos[t_PackageIndex].internalDependencies[i].url
+                        packageURL = GitRepositoryInfo.gitInfos[t_PackageIndex].internalDependencies[i].url
                     });
                 }
 
@@ -622,32 +618,35 @@
 
             return null;
         }
-        private void OnImportButtonPressed(){
+        private void OnImportButtonPressed () {
 
             List<PackageInfo> t_ListOfPackageInfo = GetPackageURLs (m_SelectedPackageIndex);
-                                int t_NumberOfPackageInfo = t_ListOfPackageInfo.Count;
-                                for (int i = 0; i < t_NumberOfPackageInfo; i++) {
+            int t_NumberOfPackageInfo = t_ListOfPackageInfo.Count;
+            for (int i = 0; i < t_NumberOfPackageInfo; i++) {
 
-                                    if (IsRepositoryInAssetFolder (t_ListOfPackageInfo[i].packageName)) {
-                                        t_ListOfPackageInfo.RemoveAt (i);
-                                        t_ListOfPackageInfo.TrimExcess ();
-                                        t_NumberOfPackageInfo--;
-                                        i--;
-                                    }
-                                }
+                if (IsRepositoryInAssetFolder (t_ListOfPackageInfo[i].packageName)) {
+                    t_ListOfPackageInfo.RemoveAt (i);
+                    t_ListOfPackageInfo.TrimExcess ();
+                    t_NumberOfPackageInfo--;
+                    i--;
+                }
+            }
 
-                                if (t_NumberOfPackageInfo > 0)
-                                    AddNewRepositoriesToManifestJSON (t_ListOfPackageInfo);
+            if (t_NumberOfPackageInfo > 0)
+                AddNewRepositoriesToManifestJSON (t_ListOfPackageInfo);
         }
-        private void OnRemoveButtonPressed(){
+        private void OnRemoveButtonPressed () {
 
-            List<PackageInfo> t_ListOfPackageInfo = GetPackageURLs (m_SelectedPackageIndex);
-                                List<string> t_ListOfPackageName = new List<string> ();
-                                int t_NumberOfPackageInfo = t_ListOfPackageInfo.Count;
-                                for (int i = 0; i < t_NumberOfPackageInfo; i++) {
-                                    t_ListOfPackageName.Add (t_ListOfPackageInfo[i].packageName);
-                                }
-                                RemoveRepositoriesFromManifestJSON (t_ListOfPackageName);
+            //REMOVE PACKAGE WITH DEPENDENCY
+            // List<PackageInfo> t_ListOfPackageInfo = GetPackageURLs (m_SelectedPackageIndex);
+            // List<string> t_ListOfPackageName = new List<string> ();
+            // int t_NumberOfPackageInfo = t_ListOfPackageInfo.Count;
+            // for (int i = 0; i < t_NumberOfPackageInfo; i++) {
+            //     t_ListOfPackageName.Add (t_ListOfPackageInfo[i].packageName);
+            // }
+            // RemoveRepositoriesFromManifestJSON (t_ListOfPackageName);
+
+            RemoveRepositoriesFromManifestJSON (new List<string>(){GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].name});
         }
 
         #endregion
@@ -815,7 +814,7 @@
                     bool t_IsThisPackageToBeRemoved = false;
                     for (int j = 0; j < t_NumberOfPackageToBeRemoved; j++) {
 
-                        if (t_CurrentPackageInfo[i].packageName.Contains (t_ListOfPackageName[j])) {
+                        if (t_CurrentPackageInfo[i].packageName == ("\"" + t_ListOfPackageName[j] + "\"")) {
 
                             t_ListOfPackageName.RemoveAt (j);
                             t_ListOfPackageName.TrimExcess ();
@@ -847,6 +846,8 @@
                 streamWrite.Write (t_NewManifest);
             }
             AssetDatabase.Refresh ();
+
+            UpdatePackageLoadedInfo ();
         }
 
         #endregion
