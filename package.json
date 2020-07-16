@@ -1,5 +1,5 @@
 {
-    "name" : "com.faith.package_manager",
+    "name" : "com.faith.packagemanager",
     "displayName": "FAITH Package Manager",
     "version" : "0.1.1",
     "unity": "2019.4",
@@ -10,7 +10,7 @@
     },
     "repository":{
         "type":"git",
-        "url": "https://github.com/tashfiq103/com.faith.package_manager.git"
+        "url": "https://github.com/tashfiq103/com.faith.packagemanager.git"
     }
     
 }

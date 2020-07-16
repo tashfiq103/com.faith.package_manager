@@ -1,4 +1,4 @@
-﻿namespace com.faith.package_manager {
+﻿namespace com.faith.packagemanager {
     using System.Collections.Generic;
     using UnityEngine;
 

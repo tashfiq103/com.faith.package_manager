@@ -1,4 +1,4 @@
-﻿namespace com.faith.package_manager {
+﻿namespace com.faith.packagemanager {
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
@@ -87,7 +87,7 @@
 
         private void Initialization () {
 
-            IS_IN_DEVELOPMENT_MODE = IsRepositoryInAssetFolder ("com.faith.package_manager");
+            IS_IN_DEVELOPMENT_MODE = IsRepositoryInAssetFolder ("com.faith.packagemanager");
 
             m_SelectedPackageIndex = 0;
             
@@ -95,14 +95,14 @@
 
                 GitRepositoryInfo = (GitRepoInfo) AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("GitRepositoryInfo")[0]), typeof (GitRepoInfo));
                 
-                m_IconForTickMark = GetTexture ("Icon_TickMark", "com.faith.package_manager");
-                m_IconForDownload = GetTexture ("Icon_Download", "com.faith.package_manager");
+                m_IconForTickMark = GetTexture ("Icon_TickMark", "com.faith.packagemanager");
+                m_IconForDownload = GetTexture ("Icon_Download", "com.faith.packagemanager");
             } else {
 
-                GitRepositoryInfo = (GitRepoInfo) AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("GitRepositoryInfo",new string[]{"Packages/com.faith.package_manager"})[0]), typeof (GitRepoInfo));
+                GitRepositoryInfo = (GitRepoInfo) AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("GitRepositoryInfo",new string[]{"Packages/com.faith.packagemanager"})[0]), typeof (GitRepoInfo));
 
-                m_IconForTickMark = GetTexture ("Icon_TickMark", "Packages/com.faith.package_manager");
-                m_IconForDownload = GetTexture ("Icon_Download", "Packages/com.faith.package_manager");
+                m_IconForTickMark = GetTexture ("Icon_TickMark", "Packages/com.faith.packagemanager");
+                m_IconForDownload = GetTexture ("Icon_Download", "Packages/com.faith.packagemanager");
             }
 
             UpdatePackageLoadedInfo ();
