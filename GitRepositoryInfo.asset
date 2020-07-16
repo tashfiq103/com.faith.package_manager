@@ -32,11 +32,7 @@ MonoBehaviour:
     author: Muhammad Tashfiqul Bari
     description: Gameplay services to ensure the roobstness of gameplay mechanics
     unityDependencies: []
-    internalDependencies:
-    - displayName: FAITH MathLibrary
-      version: 0.1.0
-      name: com.faith.math
-      url: https://github.com/tashfiq103/com.faith.math.git
+    internalDependencies: []
     externalDependencies: []
     repository:
       type: 0
