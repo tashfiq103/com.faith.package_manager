@@ -89,27 +89,23 @@
 
             IS_IN_DEVELOPMENT_MODE = IsRepositoryInAssetFolder ("com.faith.package_manager");
 
-            string[] m_GUIDOfGitRepositoryInfo = AssetDatabase.FindAssets ("GitRepositoryInfo");
-
-            if (m_GUIDOfGitRepositoryInfo.Length > 0) {
-
-                string t_AssetPath = AssetDatabase.GUIDToAssetPath (m_GUIDOfGitRepositoryInfo[0]);
-                GitRepositoryInfo = (GitRepoInfo) AssetDatabase.LoadAssetAtPath (t_AssetPath, typeof (GitRepoInfo));
-            }
-
             m_SelectedPackageIndex = 0;
-
-            UpdatePackageLoadedInfo ();
-
+            
             if (IS_IN_DEVELOPMENT_MODE) {
 
-                m_IconForTickMark = GetTexture ("Icon_TickMark", "Assets/com.faith.package_manager/Icons");
-                m_IconForDownload = GetTexture ("Icon_Download", "Assets/com.faith.package_manager/Icons");
+                GitRepositoryInfo = (GitRepoInfo) AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("GitRepositoryInfo")[0]), typeof (GitRepoInfo));
+                
+                m_IconForTickMark = GetTexture ("Icon_TickMark", "com.faith.package_manager");
+                m_IconForDownload = GetTexture ("Icon_Download", "com.faith.package_manager");
             } else {
 
-                m_IconForTickMark = GetTexture ("Icon_TickMark", GetFolderName ("com.faith.package_manager") + "/Icons");
-                m_IconForDownload = GetTexture ("Icon_Download", GetFolderName ("com.faith.package_manager") + "/Icons");
+                GitRepositoryInfo = (GitRepoInfo) AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("GitRepositoryInfo",new string[]{"Packages/com.faith.package_manager"})[0]), typeof (GitRepoInfo));
+
+                m_IconForTickMark = GetTexture ("Icon_TickMark", "Packages/com.faith.package_manager");
+                m_IconForDownload = GetTexture ("Icon_Download", "Packages/com.faith.package_manager");
             }
+
+            UpdatePackageLoadedInfo ();
 
             m_BackgroundTextureOfHeader = new Texture2D (1, 1);
             m_BackgroundTextureOfHeader.SetPixel (
@@ -443,13 +439,13 @@
             m_IsPackageLoaded = new bool[t_NumberOfGitInfo];
             for (int i = 0; i < t_NumberOfGitInfo; i++) {
 
-                m_IsPackageLoaded[i] = IsRepositoryInAssetFolder (GitRepositoryInfo.gitInfos[i].name);
+                m_IsPackageLoaded[i] = IsRepositoryInPackageFolder (GitRepositoryInfo.gitInfos[i].name);
             }
         }
 
         public bool IsRepositoryInAssetFolder (string t_PackageName) {
 
-            string[] t_Directories = Directory.GetDirectories (Application.dataPath, t_PackageName + "*");
+            string[] t_Directories = AssetDatabase.FindAssets(t_PackageName);
             if (t_Directories.Length > 0) {
                 return true;
             }
@@ -465,14 +461,14 @@
                 t_ModifiedDataPath += t_PathSplit[i] + "/";
             }
             t_ModifiedDataPath += "Library/PackageCache/";
-            string[] t_Directories = Directory.GetDirectories (Application.dataPath, t_PackageName + "*");
+            string[] t_Directories = Directory.GetDirectories (t_ModifiedDataPath, t_PackageName + "*");
             if (t_Directories.Length > 0) {
                 return true;
             }
             return false;
         }
 
-        public string GetFolderName (string t_FolderName) {
+        public string GetDirectoryOfThisFolder (string t_FolderName) {
 
             string t_ModifiedDataPath = Application.dataPath;
             if (!IS_IN_DEVELOPMENT_MODE) {
@@ -484,8 +480,19 @@
                 t_ModifiedDataPath += "Library/PackageCache/";
             }
 
-            if (Directory.GetDirectories (t_ModifiedDataPath, t_FolderName + "*").Length > 0) {
-                return Directory.GetDirectories (t_ModifiedDataPath, t_FolderName + "*") [0];
+            string[] t_Directories = Directory.GetDirectories (t_ModifiedDataPath, t_FolderName + "*");
+            if (t_Directories.Length > 0) {
+                
+                List<char> t_Characters = t_Directories[0].ToList();
+                int t_NumberOfCharacter = t_Characters.Count;
+                for(int i = 0 ; i < t_NumberOfCharacter; i++){
+                    if(t_Characters[i] == '\\'){
+                        t_Characters[i] = '/';
+                    }
+                }
+                string t_NewDirectory = new string(t_Characters.ToArray());
+
+                return t_NewDirectory;
             }
             return "NoFolderFound";
         }
