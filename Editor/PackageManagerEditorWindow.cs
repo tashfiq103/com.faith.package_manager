@@ -445,7 +445,7 @@
 
         public bool IsRepositoryInAssetFolder (string t_PackageName) {
 
-            string[] t_Directories = AssetDatabase.FindAssets(t_PackageName);
+            string[] t_Directories = AssetDatabase.FindAssets(t_PackageName, new string[]{"Assets"});
             if (t_Directories.Length > 0) {
                 return true;
             }
