@@ -220,7 +220,7 @@
                     GUI.Label (new Rect (0, 28 * i, 160, 25), "  " + GitRepositoryInfo.gitInfos[i].displayName, t_GUIStyleForLabel);
                     GUI.Label (
                         new Rect (160, 30 * i, 20, 20),
-                        m_IsPackageLoaded[i] ? m_IconForTickMark : m_IconForDownload);
+                        IsRepositoryInPackageFolder(GitRepositoryInfo.gitInfos[i].name) ? m_IconForTickMark : m_IconForDownload);
                     // GUILayout.BeginHorizontal (GUI.skin.textArea); {
 
                     //     if (GUILayout.Button (m_GitRepositoryInfo.gitInfos[i].displayName, m_GUIStyleForButtonInPackageList, GUILayout.Height (25))) {
@@ -523,13 +523,13 @@
             return false;
         }
         private bool IsRepositoryInPackageFolder (string t_PackageName) {
-            
-            string[] t_AssetsPath = AssetDatabase.FindAssets(t_PackageName);
-            foreach(string t_AssetPath in t_AssetsPath){
-                string[] t_Split = AssetDatabase.GUIDToAssetPath(t_AssetPath).Split('/');
-                if(t_PackageName + ".asmdef" == t_Split[t_Split.Length - 1])
+
+            string[] t_AssetsPath = AssetDatabase.FindAssets (t_PackageName);
+            foreach (string t_AssetPath in t_AssetsPath) {
+                string[] t_Split = AssetDatabase.GUIDToAssetPath (t_AssetPath).Split ('/');
+                if (t_PackageName + ".asmdef" == t_Split[t_Split.Length - 1])
                     return true;
-                
+
             }
             return false;
         }
@@ -559,11 +559,11 @@
             int t_NumberOfGitRepositoryInfo = GitRepositoryInfo.gitInfos.Count;
             for (int i = 0; i < t_NumberOfGitRepositoryInfo; i++) {
 
-                if (i != t_PackageIndex && IsRepositoryInPackageFolder(GitRepositoryInfo.gitInfos[i].name)) {
+                if (i != t_PackageIndex && IsRepositoryInPackageFolder (GitRepositoryInfo.gitInfos[i].name)) {
                     int t_NumberOfInternalDependencies = GitRepositoryInfo.gitInfos[i].internalDependencies.Count;
                     for (int j = 0; j < t_NumberOfInternalDependencies; j++) {
 
-                        if (IsRepositoryInPackageFolder(t_RepositoryName) && GitRepositoryInfo.gitInfos[i].internalDependencies[j].name.Contains (t_RepositoryName)) {
+                        if (IsRepositoryInPackageFolder (t_RepositoryName) && GitRepositoryInfo.gitInfos[i].internalDependencies[j].name.Contains (t_RepositoryName)) {
                             return true;
                         }
                     }
@@ -573,7 +573,8 @@
 
             return false;
         }
-        private List<PackageInfo> GetPackageURLs (string t_PackageName) {
+        
+        private List<PackageInfo> GetPackageURLs(string t_PackageName){
 
             if (IsValidPackageName (t_PackageName)) {
                 int t_NumberOfGitReposityory = GitRepositoryInfo.gitInfos.Count;
@@ -586,17 +587,18 @@
 
             return null;
         }
-        private List<PackageInfo> GetPackageURLs (int t_PackageIndex) {
 
-            if (IsValidPackageIndex (t_PackageIndex)) {
-
+        private List<PackageInfo> GetPackageURLs(int t_PackageIndex){
+            
+             if (IsValidPackageIndex (t_PackageIndex)){
+                
                 List<PackageInfo> t_ListOfPackageInfo = new List<PackageInfo> ();
-
+                
                 int t_NumberOfInternalDependencies = GitRepositoryInfo.gitInfos[t_PackageIndex].internalDependencies.Count;
                 for (int i = 0; i < t_NumberOfInternalDependencies; i++) {
                     t_ListOfPackageInfo.Add (new PackageInfo () {
                         packageName = GitRepositoryInfo.gitInfos[t_PackageIndex].internalDependencies[i].name,
-                        packageURL = GitRepositoryInfo.gitInfos[t_PackageIndex].internalDependencies[i].url
+                            packageURL = GitRepositoryInfo.gitInfos[t_PackageIndex].internalDependencies[i].url
                     });
                 }
 
@@ -612,7 +614,72 @@
                     packageName = GitRepositoryInfo.gitInfos[t_PackageIndex].name,
                         packageURL = GitRepositoryInfo.gitInfos[t_PackageIndex].repository.url
                 });
+             }
 
+             return null;
+        }
+
+        private List<PackageInfo> GetPackageURLsToBeLoaded (string t_PackageName) {
+
+            if (IsValidPackageName (t_PackageName)) {
+                int t_NumberOfGitReposityory = GitRepositoryInfo.gitInfos.Count;
+                for (int i = 0; i < t_NumberOfGitReposityory; i++) {
+
+                    if (t_PackageName == GitRepositoryInfo.gitInfos[i].name)
+                        return GetPackageURLsToBeLoaded (i);
+                }
+            }
+
+            return null;
+        }
+        private List<PackageInfo> GetPackageURLsToBeLoaded (int t_PackageIndex) {
+
+            if (IsValidPackageIndex (t_PackageIndex)) {
+
+                List<PackageInfo> t_ListOfPackageInfo = new List<PackageInfo> ();
+                
+                List<int> t_CheckedPackage = new List<int> ();
+                Stack<int> t_PackageToBeChecked = new Stack<int> ();
+                int t_CurrentPackageIndex = t_PackageIndex;
+
+                do {
+
+                    if (!t_CheckedPackage.Contains (t_CurrentPackageIndex)) {
+                        
+                        if (!IsRepositoryInPackageFolder (GitRepositoryInfo.gitInfos[t_CurrentPackageIndex].name)) {
+
+                            t_ListOfPackageInfo.Add (new PackageInfo () {
+                                packageName = GitRepositoryInfo.gitInfos[t_CurrentPackageIndex].name,
+                                    packageURL = GitRepositoryInfo.gitInfos[t_CurrentPackageIndex].repository.url
+                            });
+
+                            t_CheckedPackage.Add (t_CurrentPackageIndex);
+                        }
+
+                        int t_NumberOfGitRepository = GitRepositoryInfo.gitInfos.Count;
+                        int t_NumberOfInternalDependencies = GitRepositoryInfo.gitInfos[t_CurrentPackageIndex].internalDependencies.Count;
+                        for (int i = 0; i < t_NumberOfInternalDependencies; i++) {
+                            for (int j = 0; j < t_NumberOfGitRepository; j++) {
+                                if (GitRepositoryInfo.gitInfos[j].name == GitRepositoryInfo.gitInfos[t_CurrentPackageIndex].internalDependencies[i].name &&
+                                    !t_CheckedPackage.Contains (j)) {
+
+                                    t_PackageToBeChecked.Push (j);
+                                }
+                            }
+                        }
+
+                        if (t_PackageToBeChecked.Count > 0) {
+                            t_CurrentPackageIndex = t_PackageToBeChecked.Pop ();
+                        }else{
+                            t_PackageToBeChecked = null;
+                        }
+
+                    }
+                } while (t_PackageToBeChecked != null);
+
+                // foreach(PackageInfo t_PackageName in t_ListOfPackageInfo){
+                //     Debug.Log("Adding Package : " + t_PackageName.packageName);
+                // }
                 return t_ListOfPackageInfo;
             }
 
@@ -620,20 +687,12 @@
         }
         private void OnImportButtonPressed () {
 
-            List<PackageInfo> t_ListOfPackageInfo = GetPackageURLs (m_SelectedPackageIndex);
-            int t_NumberOfPackageInfo = t_ListOfPackageInfo.Count;
-            for (int i = 0; i < t_NumberOfPackageInfo; i++) {
-
-                if (IsRepositoryInAssetFolder (t_ListOfPackageInfo[i].packageName)) {
-                    t_ListOfPackageInfo.RemoveAt (i);
-                    t_ListOfPackageInfo.TrimExcess ();
-                    t_NumberOfPackageInfo--;
-                    i--;
-                }
-            }
-
-            if (t_NumberOfPackageInfo > 0)
-                AddNewRepositoriesToManifestJSON (t_ListOfPackageInfo);
+            //It is very important the way you add the manifest
+            //The one at the top will be loaded first, and later the other
+            //So make sure, that the dependency package get to the earlier in the list
+            List<PackageInfo> t_URLs = GetPackageURLsToBeLoaded (m_SelectedPackageIndex);
+            t_URLs.Reverse();
+            AddNewRepositoriesToManifestJSON(t_URLs);
         }
         private void OnRemoveButtonPressed () {
 
@@ -646,7 +705,7 @@
             // }
             // RemoveRepositoriesFromManifestJSON (t_ListOfPackageName);
 
-            RemoveRepositoriesFromManifestJSON (new List<string>(){GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].name});
+            RemoveRepositoriesFromManifestJSON (new List<string> () { GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].name });
         }
 
         #endregion
