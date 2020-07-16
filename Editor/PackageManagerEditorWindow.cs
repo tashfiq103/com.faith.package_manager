@@ -380,11 +380,12 @@
                                     
                                     string t_Message = "Please remove the following repository before you remove this one\n";
                                     string[] t_RepositoryNameWhichHasDependencies = GetListOfRepositoryNameThatDependOnFollowingRepository(m_SelectedPackageIndex).ToArray();
-                                    foreach(string t_RepositoryName in t_RepositoryNameWhichHasDependencies){
-                                        t_Message += t_RepositoryName + "\n";
-                                    };
+                                    int t_NumberOfRepository = t_RepositoryNameWhichHasDependencies.Length;
+                                    for(int i = 0 ; i < t_NumberOfRepository; i++){
+                                        t_Message += t_RepositoryNameWhichHasDependencies[i] + ((i == (t_NumberOfRepository - 1)) ? "" : "\n");
+                                    }
                                     EditorUtility.DisplayDialog(
-                                        "The following repository '" + GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].name + "' has dependency",
+                                        GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].displayName + "' has dependency!",
                                         t_Message,
                                         "Got It!"
                                     );
@@ -428,7 +429,6 @@
             }
             return null;
         }
-        
         private string GetDirectoryOfThisFolder (string t_FolderName) {
 
             string t_ModifiedDataPath = Application.dataPath;
@@ -505,7 +505,6 @@
 
             return t_ListOfRepositoryNameWhichHasDependency;
         }
-
         private void UpdatePackageLoadedInfo () {
 
             int t_NumberOfGitInfo = GitRepositoryInfo.gitInfos.Count;
@@ -515,7 +514,6 @@
                 m_IsPackageLoaded[i] = IsRepositoryInPackageFolder (GitRepositoryInfo.gitInfos[i].name);
             }
         }
-
         private bool IsRepositoryInAssetFolder (string t_PackageName) {
 
             string[] t_Directories = AssetDatabase.FindAssets(t_PackageName, new string[]{"Assets"});
@@ -524,7 +522,6 @@
             }
             return false;
         }
-
         private bool IsRepositoryInPackageFolder (string t_PackageName) {
 
             string t_ModifiedDataPath = "";
@@ -540,7 +537,6 @@
             }
             return false;
         }
-
         private bool IsValidPackageIndex (int t_PackageIndex) {
 
             if (t_PackageIndex >= 0 && t_PackageIndex < GitRepositoryInfo.gitInfos.Count)
@@ -549,7 +545,6 @@
             Debug.LogError ("Invalid package index : " + t_PackageIndex);
             return false;
         }
-
         private bool IsValidPackageName (string t_PackageName) {
 
             int t_NumberOfGitReposityory = GitRepositoryInfo.gitInfos.Count;
@@ -562,7 +557,6 @@
             Debug.LogError ("Invalid package name : " + t_PackageName);
             return false;
         }
-
         private bool IsFollowingRepositoryHasDependencyOnOtherRepository(int t_PackageIndex){
 
             string t_RepositoryName = GitRepositoryInfo.gitInfos[t_PackageIndex].name;
@@ -583,7 +577,6 @@
 
             return false;
         }
-
         private List<PackageInfo> GetPackageURLs (string t_PackageName) {
 
             if (IsValidPackageName (t_PackageName)) {
@@ -597,7 +590,6 @@
 
             return null;
         }
-
         private List<PackageInfo> GetPackageURLs (int t_PackageIndex) {
 
             if (IsValidPackageIndex (t_PackageIndex)) {
@@ -630,7 +622,6 @@
 
             return null;
         }
-
         private void OnImportButtonPressed(){
 
             List<PackageInfo> t_ListOfPackageInfo = GetPackageURLs (m_SelectedPackageIndex);
@@ -648,7 +639,6 @@
                                 if (t_NumberOfPackageInfo > 0)
                                     AddNewRepositoriesToManifestJSON (t_ListOfPackageInfo);
         }
-
         private void OnRemoveButtonPressed(){
 
             List<PackageInfo> t_ListOfPackageInfo = GetPackageURLs (m_SelectedPackageIndex);

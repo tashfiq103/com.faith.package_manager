@@ -57,3 +57,19 @@ MonoBehaviour:
     repository:
       type: 0
       url: https://github.com/tashfiq103/com.faith.gameplay.service.git
+  - name: com.faith.ai
+    displayName: Gameplay AI
+    version: 0.1.0
+    unity: 2019.4
+    author: Muhammad Tashfiqul Bari
+    description: AI behaviour in gameplay
+    unityDependencies: []
+    internalDependencies:
+    - displayName: MathLibrary
+      version: 0.1.0
+      name: com.faith.math
+      url: https://github.com/tashfiq103/com.faith.math.git
+    externalDependencies: []
+    repository:
+      type: 0
+      url: https://github.com/tashfiq103/com.faith.ai.git
