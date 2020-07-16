@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1b5539d1f8c19a418bf38fde5ae1178, type: 3}
+  m_Name: GitRepositoryInfo
+  m_EditorClassIdentifier: 
+  gitInfos:
+  - name: com.faith.math
+    displayName: MathLibrary
+    version: 0.1.0
+    unity: 2019.4
+    author: Muhammad Tashfiqul Bari
+    description: Math Libraray for other tools of faith unity package
+    unityDependencies: []
+    internalDependencies: []
+    externalDependencies: []
+    repository:
+      type: 0
+      url: https://github.com/tashfiq103/com.faith.math.git
+  - name: com.faith.gameplay_service
+    displayName: GameplayService
+    version: 0.1.0
+    unity: 2019.4
+    author: Muhammad Tashfiqul Bari
+    description: Gameplay services to ensure the roobstness of gameplay mechanics
+    unityDependencies: []
+    internalDependencies:
+    - displayName: FAITH MathLibrary
+      version: 0.1.0
+      name: com.faith.math
+      url: https://github.com/tashfiq103/com.faith.math.git
+    externalDependencies: []
+    repository:
+      type: 0
+      url: https://github.com/tashfiq103/com.faith.gameplay_service.git
