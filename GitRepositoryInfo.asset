@@ -103,3 +103,31 @@ MonoBehaviour:
     repository:
       type: 0
       url: https://github.com/tashfiq103/com.faith.scriptedparticle.git
+  - name: com.faith.shader
+    displayName: Shaders
+    version: 0.1.0
+    unity: 2019.4
+    author: Muhammad Tashfiqul Bari
+    description: Custom shader using ShaderGraph
+    unityDependencies: []
+    internalDependencies: []
+    externalDependencies: []
+    repository:
+      type: 0
+      url: https://github.com/tashfiq103/com.faith.shader.git
+  - name: com.faith.ui
+    displayName: UI Preset
+    version: 0.1.0
+    unity: 2019.4
+    author: Muhammad Tashfiqul Bari
+    description: Some of the preset for UI deployment
+    unityDependencies: []
+    internalDependencies:
+    - displayName: Gameplay.Service
+      version: 0.1.0
+      name: com.faith.gameplay.service
+      url: https://github.com/tashfiq103/com.faith.gameplay.service.git
+    externalDependencies: []
+    repository:
+      type: 0
+      url: https://github.com/tashfiq103/com.faith.ui.git
