@@ -51,7 +51,7 @@
 
         #region Public Callback :   Static
 
-        [MenuItem ("FAITH/PackageManager")]
+        [MenuItem ("FAITH/PackageManager",false,100)]
         public static void ShowWindow () {
 
             m_PackageManagerEditorWindow = (PackageManagerEditorWindow) GetWindow<PackageManagerEditorWindow> ("Package Manager", typeof (PackageManagerEditorWindow));
