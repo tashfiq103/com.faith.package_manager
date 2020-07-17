@@ -90,3 +90,16 @@ MonoBehaviour:
     repository:
       type: 0
       url: https://github.com/tashfiq103/com.faith.camera.git
+  - name: com.faith.scriptedparticle
+    displayName: Scripted Particle
+    version: 0.1.0
+    unity: 2019.4
+    author: Muhammad Tashfiqul Bari
+    description: Using the scripted particle, you can modify the particle effects
+      on runtime
+    unityDependencies: []
+    internalDependencies: []
+    externalDependencies: []
+    repository:
+      type: 0
+      url: https://github.com/tashfiq103/com.faith.scriptedparticle.git

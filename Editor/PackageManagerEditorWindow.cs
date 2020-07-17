@@ -219,7 +219,7 @@
 
                     GUI.Label (new Rect (0, 28 * i, 160, 25), "  " + GitRepositoryInfo.gitInfos[i].displayName, t_GUIStyleForLabel);
                     GUI.Label (
-                        new Rect (160, 30 * i, 20, 20),
+                        new Rect (160, 28.5f * i, 20, 20),
                         IsRepositoryInPackageFolder(GitRepositoryInfo.gitInfos[i].name) ? m_IconForTickMark : m_IconForDownload);
                     // GUILayout.BeginHorizontal (GUI.skin.textArea); {
 
