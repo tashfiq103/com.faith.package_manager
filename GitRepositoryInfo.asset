@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gitInfos:
   - name: com.faith.math
-    displayName: MathLibrary
+    displayName: Math Library
     version: 0.1.0
     unity: 2019.4
     author: Muhammad Tashfiqul Bari
@@ -73,3 +73,20 @@ MonoBehaviour:
     repository:
       type: 0
       url: https://github.com/tashfiq103/com.faith.ai.git
+  - name: com.faith.camera
+    displayName: Camera
+    version: 0.1.0
+    unity: 2019.4
+    author: Muhammad Tashfiqul Bari
+    description: The following package containing pre-build camera transation script
+      that help to achieve cinematic transation during the game
+    unityDependencies: []
+    internalDependencies:
+    - displayName: Math Library
+      version: 0.1.0
+      name: com.faith.math
+      url: https://github.com/tashfiq103/com.faith.math.git
+    externalDependencies: []
+    repository:
+      type: 0
+      url: https://github.com/tashfiq103/com.faith.camera.git
