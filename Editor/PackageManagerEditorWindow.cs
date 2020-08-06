@@ -834,6 +834,7 @@
                 t_NewManifest += "\t}\n";
                 t_NewManifest += "}\n";
                 streamWrite.Write (t_NewManifest);
+
                 // streamWrite.WriteLine ("\t}");
                 // streamWrite.WriteLine ("}");
             }
