@@ -51,7 +51,7 @@
 
         #region Public Callback :   Static
 
-        [MenuItem ("FAITH/PackageManager",false,100)]
+        [MenuItem ("FAITH/PackageManager", false, 100)]
         public static void ShowWindow () {
 
             m_PackageManagerEditorWindow = (PackageManagerEditorWindow) GetWindow<PackageManagerEditorWindow> ("Package Manager", typeof (PackageManagerEditorWindow));
@@ -220,7 +220,7 @@
                     GUI.Label (new Rect (0, 28 * i, 160, 25), "  " + GitRepositoryInfo.gitInfos[i].displayName, t_GUIStyleForLabel);
                     GUI.Label (
                         new Rect (160, 28.5f * i, 20, 20),
-                        IsRepositoryInPackageFolder(GitRepositoryInfo.gitInfos[i].name) ? m_IconForTickMark : m_IconForDownload);
+                        IsRepositoryInPackageFolder (GitRepositoryInfo.gitInfos[i].name) ? m_IconForTickMark : m_IconForDownload);
                     // GUILayout.BeginHorizontal (GUI.skin.textArea); {
 
                     //     if (GUILayout.Button (m_GitRepositoryInfo.gitInfos[i].displayName, m_GUIStyleForButtonInPackageList, GUILayout.Height (25))) {
@@ -371,31 +371,35 @@
                     EditorGUILayout.BeginHorizontal (GUILayout.Width (170)); {
 
                         if (m_IsPackageLoaded[m_SelectedPackageIndex]) {
-                            if (GUILayout.Button ("Remove")) {
+                            if (GUILayout.Button (EditorApplication.isCompiling ? "Wait Until Compile" : "Remove")) {
 
-                                if (!IsFollowingRepositoryHasDependencyOnOtherRepository (m_SelectedPackageIndex)) {
+                                if (!EditorApplication.isCompiling) {
 
-                                    OnRemoveButtonPressed ();
-                                } else {
+                                    if (!IsFollowingRepositoryHasDependencyOnOtherRepository (m_SelectedPackageIndex)) {
 
-                                    string t_Message = "Please remove the following repository before you remove this one\n";
-                                    string[] t_RepositoryNameWhichHasDependencies = GetListOfRepositoryNameThatDependOnFollowingRepository (m_SelectedPackageIndex).ToArray ();
-                                    int t_NumberOfRepository = t_RepositoryNameWhichHasDependencies.Length;
-                                    for (int i = 0; i < t_NumberOfRepository; i++) {
-                                        t_Message += t_RepositoryNameWhichHasDependencies[i] + ((i == (t_NumberOfRepository - 1)) ? "" : "\n");
+                                        OnRemoveButtonPressed ();
+                                    } else {
+
+                                        string t_Message = "Please remove the following repository before you remove this one\n";
+                                        string[] t_RepositoryNameWhichHasDependencies = GetListOfRepositoryNameThatDependOnFollowingRepository (m_SelectedPackageIndex).ToArray ();
+                                        int t_NumberOfRepository = t_RepositoryNameWhichHasDependencies.Length;
+                                        for (int i = 0; i < t_NumberOfRepository; i++) {
+                                            t_Message += t_RepositoryNameWhichHasDependencies[i] + ((i == (t_NumberOfRepository - 1)) ? "" : "\n");
+                                        }
+                                        EditorUtility.DisplayDialog (
+                                            GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].displayName + "' has dependency!",
+                                            t_Message,
+                                            "Got It!"
+                                        );
                                     }
-                                    EditorUtility.DisplayDialog (
-                                        GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].displayName + "' has dependency!",
-                                        t_Message,
-                                        "Got It!"
-                                    );
                                 }
+
                             }
                         } else {
 
-                            if (GUILayout.Button ("Import")) {
-
-                                OnImportButtonPressed ();
+                            if (GUILayout.Button (EditorApplication.isCompiling ? "Wait Until Compile" : "Import")) {
+                                if (!EditorApplication.isCompiling)
+                                    OnImportButtonPressed ();
                             }
 
                         }
@@ -573,8 +577,8 @@
 
             return false;
         }
-        
-        private List<PackageInfo> GetPackageURLs(string t_PackageName){
+
+        private List<PackageInfo> GetPackageURLs (string t_PackageName) {
 
             if (IsValidPackageName (t_PackageName)) {
                 int t_NumberOfGitReposityory = GitRepositoryInfo.gitInfos.Count;
@@ -588,12 +592,12 @@
             return null;
         }
 
-        private List<PackageInfo> GetPackageURLs(int t_PackageIndex){
-            
-             if (IsValidPackageIndex (t_PackageIndex)){
-                
+        private List<PackageInfo> GetPackageURLs (int t_PackageIndex) {
+
+            if (IsValidPackageIndex (t_PackageIndex)) {
+
                 List<PackageInfo> t_ListOfPackageInfo = new List<PackageInfo> ();
-                
+
                 int t_NumberOfInternalDependencies = GitRepositoryInfo.gitInfos[t_PackageIndex].internalDependencies.Count;
                 for (int i = 0; i < t_NumberOfInternalDependencies; i++) {
                     t_ListOfPackageInfo.Add (new PackageInfo () {
@@ -614,9 +618,9 @@
                     packageName = GitRepositoryInfo.gitInfos[t_PackageIndex].name,
                         packageURL = GitRepositoryInfo.gitInfos[t_PackageIndex].repository.url
                 });
-             }
+            }
 
-             return null;
+            return null;
         }
 
         private List<PackageInfo> GetPackageURLsToBeLoaded (string t_PackageName) {
@@ -637,7 +641,7 @@
             if (IsValidPackageIndex (t_PackageIndex)) {
 
                 List<PackageInfo> t_ListOfPackageInfo = new List<PackageInfo> ();
-                
+
                 List<int> t_CheckedPackage = new List<int> ();
                 Stack<int> t_PackageToBeChecked = new Stack<int> ();
                 int t_CurrentPackageIndex = t_PackageIndex;
@@ -645,7 +649,7 @@
                 do {
 
                     if (!t_CheckedPackage.Contains (t_CurrentPackageIndex)) {
-                        
+
                         if (!IsRepositoryInPackageFolder (GitRepositoryInfo.gitInfos[t_CurrentPackageIndex].name)) {
 
                             t_ListOfPackageInfo.Add (new PackageInfo () {
@@ -670,7 +674,7 @@
 
                         if (t_PackageToBeChecked.Count > 0) {
                             t_CurrentPackageIndex = t_PackageToBeChecked.Pop ();
-                        }else{
+                        } else {
                             t_PackageToBeChecked = null;
                         }
 
@@ -691,8 +695,11 @@
             //The one at the top will be loaded first, and later the other
             //So make sure, that the dependency package get to the earlier in the list
             List<PackageInfo> t_URLs = GetPackageURLsToBeLoaded (m_SelectedPackageIndex);
-            t_URLs.Reverse();
-            AddNewRepositoriesToManifestJSON(t_URLs);
+            t_URLs.Reverse ();
+            foreach (PackageInfo t_PackageInfo in t_URLs) {
+                Debug.Log ("PackageToBeLoaded : " + t_PackageInfo.packageName);
+            }
+            AddNewRepositoriesToManifestJSON (t_URLs);
         }
         private void OnRemoveButtonPressed () {
 
@@ -759,13 +766,16 @@
                 }
             }
 
+            string t_NewManifest = "";
             //WritingPackage
             using (StreamWriter streamWrite = new StreamWriter (t_ManifestPath)) {
 
                 bool t_IsRepositoryAlreadyAdded = false;
 
-                streamWrite.WriteLine ("{");
-                streamWrite.WriteLine ("\t\"dependencies\":{");
+                t_NewManifest = "{\n";
+                t_NewManifest += "\t\"dependencies\":{\n";
+                //streamWrite.WriteLine ("{");
+                //streamWrite.WriteLine ("\t\"dependencies\":{");
 
                 int t_NumberOfPackageToBeAdded = t_ListOfPackageInfo.Count;
                 int t_NumberOfPackage = t_CurrentPackageInfo.Count;
@@ -781,18 +791,24 @@
                         }
                     }
 
-                    streamWrite.WriteLine (
-                        "\t\t" +
+                    t_NewManifest += "\t\t" +
                         t_CurrentPackageInfo[i].packageName +
                         " : " +
                         t_CurrentPackageInfo[i].packageURL +
-                        ((i == (t_NumberOfPackage - 1)) ? (t_IsRepositoryAlreadyAdded ? "" : ",") : ","));
+                        ((i == (t_NumberOfPackage - 1)) ? (t_IsRepositoryAlreadyAdded ? "" : ",") : ",") +
+                        "\n";
+
+                    // streamWrite.WriteLine (
+                    //     "\t\t" +
+                    //     t_CurrentPackageInfo[i].packageName +
+                    //     " : " +
+                    //     t_CurrentPackageInfo[i].packageURL +
+                    //     ((i == (t_NumberOfPackage - 1)) ? (t_IsRepositoryAlreadyAdded ? "" : ",") : ","));
                 }
 
                 for (int i = 0; i < t_NumberOfPackageToBeAdded; i++) {
 
-                    streamWrite.WriteLine (
-                        "\t\t" +
+                    t_NewManifest += "\t\t" +
                         "\"" +
                         t_ListOfPackageInfo[i].packageName +
                         "\"" +
@@ -800,11 +816,26 @@
                         "\"git+" +
                         t_ListOfPackageInfo[i].packageURL +
                         "\"" +
-                        ((i == (t_NumberOfPackageToBeAdded - 1)) ? "" : ","));
+                        ((i == (t_NumberOfPackageToBeAdded - 1)) ? "" : "," +
+                            "\n");
+
+                    // streamWrite.WriteLine (
+                    //     "\t\t" +
+                    //     "\"" +
+                    //     t_ListOfPackageInfo[i].packageName +
+                    //     "\"" +
+                    //     " : " +
+                    //     "\"git+" +
+                    //     t_ListOfPackageInfo[i].packageURL +
+                    //     "\"" +
+                    //     ((i == (t_NumberOfPackageToBeAdded - 1)) ? "" : ","));
                 }
 
-                streamWrite.WriteLine ("\t}");
-                streamWrite.WriteLine ("}");
+                t_NewManifest += "\t}\n";
+                t_NewManifest += "}\n";
+                streamWrite.Write (t_NewManifest);
+                // streamWrite.WriteLine ("\t}");
+                // streamWrite.WriteLine ("}");
             }
             AssetDatabase.Refresh ();
 
