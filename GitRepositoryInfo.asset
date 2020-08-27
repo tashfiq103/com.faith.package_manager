@@ -13,18 +13,18 @@ MonoBehaviour:
   m_Name: GitRepositoryInfo
   m_EditorClassIdentifier: 
   gitInfos:
-  - name: com.faith.math
-    displayName: Math Library
-    version: 0.1.0
+  - name: com.faith.data
+    displayName: Data Library
+    version: 0.1.1
     unity: 2019.4
     author: Muhammad Tashfiqul Bari
-    description: Math Libraray for other tools of faith unity package
+    description: DataLibraray for other tools of faith unity package
     unityDependencies: []
     internalDependencies: []
     externalDependencies: []
     repository:
       type: 0
-      url: https://github.com/tashfiq103/com.faith.math.git
+      url: https://github.com/tashfiq103/com.faith.data.git
   - name: com.faith.gameplay
     displayName: Gameplay
     version: 0.1.0
@@ -33,10 +33,10 @@ MonoBehaviour:
     description: Prebuild gameplay mechanincs
     unityDependencies: []
     internalDependencies:
-    - displayName: com.faith.math
+    - displayName: com.faith.data
       version: 0.1.0
-      name: com.faith.math
-      url: https://github.com/tashfiq103/com.faith.math.git
+      name: com.faith.data
+      url: https://github.com/tashfiq103/com.faith.data.git
     - displayName: Gameplay.Service
       version: 0.1.0
       name: com.faith.gameplay.service
@@ -82,10 +82,10 @@ MonoBehaviour:
       that help to achieve cinematic transation during the game
     unityDependencies: []
     internalDependencies:
-    - displayName: Math Library
+    - displayName: Data Library
       version: 0.1.0
-      name: com.faith.math
-      url: https://github.com/tashfiq103/com.faith.math.git
+      name: com.faith.data
+      url: https://github.com/tashfiq103/com.faith.data.git
     externalDependencies: []
     repository:
       type: 0
@@ -131,3 +131,5 @@ MonoBehaviour:
     repository:
       type: 0
       url: https://github.com/tashfiq103/com.faith.ui.git
+  gitTestInfos:
+    gitInfos: []

@@ -10,6 +10,7 @@
         public string url;
     }
 
+    [System.Serializable]
     public enum TypeOfVersionControl {
         git
     }
@@ -29,17 +30,23 @@
         public string author;
         public string description;
 
-        [Space (5.0f)]
         public List<Dependencies> unityDependencies;
         public List<Dependencies> internalDependencies;
         public List<Dependencies> externalDependencies;
 
-        [Space (5.0f)]
         public Repository repository;
+    }
+
+    [System.Serializable]
+    public class GitTestInfo {
+        public List<GitInfo> gitInfos;
     }
 
     [CreateAssetMenu (fileName = "GitRepositoryInfo", menuName = "FAITH/GitRepositoryInfo", order = 1)]
     public class GitRepoInfo : ScriptableObject {
+        
         public List<GitInfo> gitInfos;
+        [SerializeField]
+        public GitTestInfo gitTestInfos;
     }
 }
