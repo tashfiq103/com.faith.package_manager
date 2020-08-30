@@ -25,6 +25,18 @@ MonoBehaviour:
     repository:
       type: 0
       url: https://github.com/tashfiq103/com.faith.data.git
+  - name: com.faith.editormodule
+    displayName: Editor Module
+    version: 0.1.0
+    unity: 2019.4
+    author: Muhammad Tashfiqul Bari
+    description: Editor module base class for editor scripting
+    unityDependencies: []
+    internalDependencies: []
+    externalDependencies: []
+    repository:
+      type: 0
+      url: https://github.com/tashfiq103/com.faith.editormodule.git
   - name: com.faith.gameplay
     displayName: Gameplay
     version: 0.1.0

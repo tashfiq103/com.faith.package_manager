@@ -38,7 +38,7 @@
     }
 
     [System.Serializable]
-    public class GitTestInfo {
+    public class JsonWrapperOfGitInfos {
         public List<GitInfo> gitInfos;
     }
 
@@ -47,6 +47,6 @@
         
         public List<GitInfo> gitInfos;
         [SerializeField]
-        public GitTestInfo gitTestInfos;
+        public JsonWrapperOfGitInfos gitTestInfos;
     }
 }
