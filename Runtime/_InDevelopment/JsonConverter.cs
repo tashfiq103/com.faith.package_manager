@@ -15,15 +15,44 @@ public class JsonConverter : MonoBehaviour
     public string downloadLink;
 
     [Header("Debugging")]
-    public JsonWrapperOfGitInfos output;
+    public RemoteGitInfos output;
+    #endregion
+
+    #region Private Variables
+
+
+    #endregion
+
+    #region Mono Behaviour
+
+    private void Start(){
+
+        gitRepoInfo.CheckForUpdate(downloadLink);
+    }
+
     #endregion
 
     #region Configuretion
 
+    private void OnDataRecieved(string t_Data){
+
+        Debug.Log(t_Data);
+    }
+
     private IEnumerator DownloadJsonFileFromURL() {
 
-        UnityWebRequest t_NewWebRequest = new UnityWebRequest(downloadLink);
-        yield return t_NewWebRequest;
+        UnityWebRequest t_NewWebRequest = UnityWebRequest.Get(downloadLink);
+        yield return t_NewWebRequest.SendWebRequest();
+        if(t_NewWebRequest.isDone){
+
+            System.IO.File.WriteAllText(Application.dataPath + "/" + nameOfFile + "(Local).json", t_NewWebRequest.downloadHandler.text);
+            output = JsonUtility.FromJson<RemoteGitInfos>(t_NewWebRequest.downloadHandler.text);
+
+        }else{
+
+
+            Debug.Log(t_NewWebRequest.error);
+        }
     }
 
     #endregion
@@ -32,23 +61,17 @@ public class JsonConverter : MonoBehaviour
 
     public void SaveRespositoryInfoAsJson() {
 
-        gitRepoInfo.gitTestInfos.gitInfos = gitRepoInfo.gitInfos;
+        gitRepoInfo.remoteGitInfos.gitInfos = gitRepoInfo.gitInfos;
 
-        string t_JsonString = JsonUtility.ToJson(gitRepoInfo.gitTestInfos, true);
+        string t_JsonString = JsonUtility.ToJson(gitRepoInfo.remoteGitInfos, true);
         System.IO.File.WriteAllText(Application.dataPath + "/" + nameOfFile + "(Local).json", t_JsonString);
 
-        output = JsonUtility.FromJson<JsonWrapperOfGitInfos>(t_JsonString);
+        output = JsonUtility.FromJson<RemoteGitInfos>(t_JsonString);
     }
 
     public void DownloadRespositoryInfoAsJson()
     {
-
-        gitRepoInfo.gitTestInfos.gitInfos = gitRepoInfo.gitInfos;
-
-        string t_JsonString = JsonUtility.ToJson(gitRepoInfo.gitTestInfos, true);
-        System.IO.File.WriteAllText(Application.dataPath + "/" + nameOfFile + "(Local).json", t_JsonString);
-
-        output = JsonUtility.FromJson<JsonWrapperOfGitInfos>(t_JsonString);
+        StartCoroutine(DownloadJsonFileFromURL());
     }
 
 
