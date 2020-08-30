@@ -329,7 +329,146 @@ MonoBehaviour:
   nameOfFile: jsonDataOfGitRepositoryInfo
   downloadLink: https://faithstudio.org/jsonTest.json
   output:
-    gitInfos: []
+    gitInfos:
+    - isNewVersionAvailable: 0
+      name: com.faith.data
+      displayName: Data Library
+      version: 0.1.1
+      unity: 2019.4
+      author: Muhammad Tashfiqul Bari
+      description: DataLibraray for other tools of faith unity package
+      unityDependencies: []
+      internalDependencies: []
+      externalDependencies: []
+      repository:
+        type: 0
+        url: https://github.com/tashfiq103/com.faith.data.git
+    - isNewVersionAvailable: 0
+      name: com.faith.editormodule
+      displayName: Editor Module
+      version: 0.1.0
+      unity: 2019.4
+      author: Muhammad Tashfiqul Bari
+      description: Editor module base class for editor scripting
+      unityDependencies: []
+      internalDependencies: []
+      externalDependencies: []
+      repository:
+        type: 0
+        url: https://github.com/tashfiq103/com.faith.editormodule.git
+    - isNewVersionAvailable: 0
+      name: com.faith.gameplay
+      displayName: Gameplay
+      version: 0.1.0
+      unity: 2019.4
+      author: Muhammad Tashfiqul Bari
+      description: Prebuild gameplay mechanincs
+      unityDependencies: []
+      internalDependencies:
+      - displayName: com.faith.data
+        version: 0.1.0
+        name: com.faith.data
+        url: https://github.com/tashfiq103/com.faith.data.git
+      - displayName: Gameplay.Service
+        version: 0.1.0
+        name: com.faith.gameplay.service
+        url: https://github.com/tashfiq103/com.faith.gameplay.service.git
+      externalDependencies: []
+      repository:
+        type: 0
+        url: https://github.com/tashfiq103/com.faith.gameplay.git
+    - isNewVersionAvailable: 0
+      name: com.faith.gameplay.service
+      displayName: Gameplay.Service
+      version: 0.1.0
+      unity: 2019.4
+      author: Muhammad Tashfiqul Bari
+      description: Gameplay services to ensure the roobstness of gameplay mechanics
+      unityDependencies: []
+      internalDependencies: []
+      externalDependencies: []
+      repository:
+        type: 0
+        url: https://github.com/tashfiq103/com.faith.gameplay.service.git
+    - isNewVersionAvailable: 0
+      name: com.faith.ai
+      displayName: Gameplay AI
+      version: 0.1.0
+      unity: 2019.4
+      author: Muhammad Tashfiqul Bari
+      description: AI behaviour in gameplay
+      unityDependencies: []
+      internalDependencies:
+      - displayName: Gameplay
+        version: 0.1.0
+        name: com.faith.gameplay
+        url: https://github.com/tashfiq103/com.faith.gameplay.git
+      externalDependencies: []
+      repository:
+        type: 0
+        url: https://github.com/tashfiq103/com.faith.ai.git
+    - isNewVersionAvailable: 0
+      name: com.faith.camera
+      displayName: Camera
+      version: 0.1.0
+      unity: 2019.4
+      author: Muhammad Tashfiqul Bari
+      description: The following package containing pre-build camera transation script
+        that help to achieve cinematic transation during the game
+      unityDependencies: []
+      internalDependencies:
+      - displayName: Data Library
+        version: 0.1.0
+        name: com.faith.data
+        url: https://github.com/tashfiq103/com.faith.data.git
+      externalDependencies: []
+      repository:
+        type: 0
+        url: https://github.com/tashfiq103/com.faith.camera.git
+    - isNewVersionAvailable: 0
+      name: com.faith.scriptedparticle
+      displayName: Scripted Particle
+      version: 0.1.0
+      unity: 2019.4
+      author: Muhammad Tashfiqul Bari
+      description: Using the scripted particle, you can modify the particle effects
+        on runtime
+      unityDependencies: []
+      internalDependencies: []
+      externalDependencies: []
+      repository:
+        type: 0
+        url: https://github.com/tashfiq103/com.faith.scriptedparticle.git
+    - isNewVersionAvailable: 0
+      name: com.faith.shader
+      displayName: Shaders
+      version: 0.1.0
+      unity: 2019.4
+      author: Muhammad Tashfiqul Bari
+      description: Custom shader using ShaderGraph
+      unityDependencies: []
+      internalDependencies: []
+      externalDependencies: []
+      repository:
+        type: 0
+        url: https://github.com/tashfiq103/com.faith.shader.git
+    - isNewVersionAvailable: 0
+      name: com.faith.ui
+      displayName: UI Preset
+      version: 0.1.0
+      unity: 2019.4
+      author: Muhammad Tashfiqul Bari
+      description: Some of the preset for UI deployment
+      unityDependencies: []
+      internalDependencies:
+      - displayName: Gameplay.Service
+        version: 0.1.0
+        name: com.faith.gameplay.service
+        url: https://github.com/tashfiq103/com.faith.gameplay.service.git
+      externalDependencies: []
+      repository:
+        type: 0
+        url: https://github.com/tashfiq103/com.faith.ui.git
 --- !u!4 &1588392263
 Transform:
   m_ObjectHideFlags: 0

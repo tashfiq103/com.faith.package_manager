@@ -4,7 +4,6 @@
     using System.Linq;
     using UnityEditor;
     using UnityEngine;
-    using Unity.EditorCoroutines.Editor;
 
     public class PackageManagerEditorWindow : EditorWindow {
 
@@ -43,6 +42,7 @@
         private Vector2 m_ScrollPositionAtPackageDescription;
 
         private string m_NameOfManifestDirectory = "Packages";
+        private string m_DownloadURLOfRemoteJSONFileForRepositoryInfo = "https://faithstudio.org/jsonTest.json";
         private string m_PackageName;
         private string m_RepositoryLink;
 
@@ -66,6 +66,8 @@
         public static void HideWindow () {
 
         }
+
+        
 
         #endregion
 
@@ -107,6 +109,7 @@
                 m_IconForTickMark = GetTexture ("Icon_TickMark", "Packages/com.faith.packagemanager");
                 m_IconForDownload = GetTexture ("Icon_Download", "Packages/com.faith.packagemanager");
             }
+            GitRepositoryInfo.CheckForUpdate(m_DownloadURLOfRemoteJSONFileForRepositoryInfo);
 
             UpdatePackageLoadedInfo ();
 
@@ -172,6 +175,8 @@
             t_OnSelectedBackgroundTexture.Apply ();
             m_OnSelectedGUIStyleForButtonInPackageList.normal.background = t_OnSelectedBackgroundTexture;
             m_OnSelectedGUIStyleForButtonInPackageList.normal.textColor = Color.white;
+        
+
         }
         private void DrawHeader () {
             Vector2 t_PanelOriginOfHeaderPanel = new Vector2 (0, 1);
@@ -372,6 +377,11 @@
                     EditorGUILayout.EndHorizontal ();
 
                     EditorGUILayout.BeginHorizontal (GUILayout.Width (170)); {
+                        
+                        if(m_SelectedPackageIndex >= m_IsPackageLoaded.Length){
+
+                            UpdatePackageLoadedInfo();
+                        }
 
                         if (m_IsPackageLoaded[m_SelectedPackageIndex]) {
                             if (GUILayout.Button (EditorApplication.isCompiling ? "Wait Until Compile" : "Remove")) {

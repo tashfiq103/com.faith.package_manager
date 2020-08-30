@@ -2,6 +2,7 @@
     using System;
     using System.Collections.Generic;
     using UnityEngine;
+    using UnityEditor;
 
     [System.Serializable]
     public class Dependencies {
@@ -25,7 +26,7 @@
     [System.Serializable]
     public class GitInfo {
 
-        //[HideInInspector]
+        [HideInInspector]
         public bool isNewVersionAvailable = false;  
 
         public string name;
@@ -50,9 +51,9 @@
     [CreateAssetMenu (fileName = "GitRepositoryInfo", menuName = "FAITH/GitRepositoryInfo", order = 1)]
     public class GitRepoInfo : ScriptableObject {
         
-        public List<GitInfo> gitInfos;
-        [SerializeField]
-        public RemoteGitInfos remoteGitInfos;
+        [Space(5.0f)]
+        public List<GitInfo>    gitInfos;
+        public RemoteGitInfos   remoteGitInfos;
 
         #if UNITY_EDITOR
 
@@ -99,6 +100,9 @@
 
                             Debug.Log("UpdateAvailable : " + gitInfos[j].name + ", CurrentVersion (" + gitInfos[i].version + ") : NewVersion (" + remoteGitInfos.gitInfos[i].version + ")");
                             gitInfos[j].isNewVersionAvailable = true;
+                        }else{
+
+                            gitInfos[j].isNewVersionAvailable = false;
                         }
 
                         t_IsFoundAsLocalGitInfo = true;
@@ -106,9 +110,13 @@
                     }
                 }
 
-                if(t_IsFoundAsLocalGitInfo){
+                if(!t_IsFoundAsLocalGitInfo){
 
+                    gitInfos.Add(remoteGitInfos.gitInfos[i]);
+                    t_NumberOfLocalGitInfos++;
 
+                    Debug.Log("NewRepositoryAdded : " + remoteGitInfos.gitInfos[i].name);
+                    
                 }
             }
         }

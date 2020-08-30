@@ -25,10 +25,7 @@ public class JsonConverter : MonoBehaviour
 
     #region Mono Behaviour
 
-    private void Start(){
-
-        gitRepoInfo.CheckForUpdate(downloadLink);
-    }
+    
 
     #endregion
 
