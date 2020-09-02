@@ -538,7 +538,7 @@
 
             return t_ListOfRepositoryNameWhichHasDependency;
         }
-        private void UpdatePackageLoadedInfo () {
+        private async void UpdatePackageLoadedInfo () {
 
             int t_NumberOfGitInfo = GitRepositoryInfo.gitInfos.Count;
             m_IsPackageLoaded = new bool[t_NumberOfGitInfo];
@@ -550,6 +550,12 @@
                     GitRepositoryInfo.MarkRepositoryWithLatestVersion(GitRepositoryInfo.gitInfos[i].name);
                 }
             }
+
+            AssetDatabase.Refresh();
+
+            await Task.Delay(500);
+            while (IsCompiling())
+                await Task.Delay(100);
         }
         private bool IsRepositoryInAssetFolder (string t_PackageName) {
 
@@ -760,14 +766,15 @@
 
         #region Configuretion   :   Reading/Writing manifest.json
 
-        private async void AddNewRepositoriesToManifestJSON (List<PackageInfo> t_ListOfPackageInfo) {
+        private string GetManifestPath() {
 
             string t_StreamingAssetPath = Application.streamingAssetsPath;
-            string[] t_Split = t_StreamingAssetPath.Split ('/');
+            string[] t_Split = t_StreamingAssetPath.Split('/');
             string t_ManifestPath = "";
 
             int t_NumberOfSplit = t_Split.Length - 2;
-            for (int i = 0; i < t_NumberOfSplit; i++) {
+            for (int i = 0; i < t_NumberOfSplit; i++)
+            {
 
                 t_ManifestPath += t_Split[i];
                 t_ManifestPath += "/";
@@ -776,36 +783,73 @@
             t_ManifestPath += "/";
             t_ManifestPath += "manifest.json";
 
+            return t_ManifestPath;
+        }
+
+        private List<PackageInfo> GetPackageInfosFromManifest() {
+
+            string t_StreamingAssetPath = Application.streamingAssetsPath;
+            string[] t_Split = t_StreamingAssetPath.Split('/');
+            string t_ManifestPath = "";
+
+            int t_NumberOfSplit = t_Split.Length - 2;
+            for (int i = 0; i < t_NumberOfSplit; i++)
+            {
+
+                t_ManifestPath += t_Split[i];
+                t_ManifestPath += "/";
+            }
+            t_ManifestPath += m_NameOfManifestDirectory;
+            t_ManifestPath += "/";
+            t_ManifestPath += "manifest.json";
+
+
             //Extracting    :   Package
-            string t_Result = File.ReadAllText (t_ManifestPath);
-            string[] t_SplitByComa = t_Result.Split (',');
+            string t_RawManifestText = File.ReadAllText(t_ManifestPath);
+            string[] t_SplitByComa = t_RawManifestText.Split(',');
             t_NumberOfSplit = t_SplitByComa.Length;
-            List<PackageInfo> t_CurrentPackageInfo = new List<PackageInfo> ();
+            List<PackageInfo> t_Result = new List<PackageInfo>();
 
-            for (int i = 0; i < t_NumberOfSplit; i++) {
+            for (int i = 0; i < t_NumberOfSplit; i++)
+            {
 
-                string t_CleanString = RemoveUnwantedChar (t_SplitByComa[i]);
-                string[] t_SplitByColon = t_CleanString.Split (':');
-                if (i == 0) {
+                string t_CleanString = RemoveUnwantedChar(t_SplitByComa[i]);
+                string[] t_SplitByColon = t_CleanString.Split(':');
+                if (i == 0)
+                {
                     string t_PackageVersion = "";
-                    for (int k = 2; k < t_SplitByColon.Length; k++) {
+                    for (int k = 2; k < t_SplitByColon.Length; k++)
+                    {
                         t_PackageVersion += ((k > 2 ? ":" : "") + t_SplitByColon[k]);
                     }
-                    t_CurrentPackageInfo.Add (new PackageInfo () {
-                        packageName = RemoveUnwantedChar (t_SplitByColon[1]),
-                            packageURL = RemoveUnwantedChar (t_PackageVersion)
+                    t_Result.Add(new PackageInfo()
+                    {
+                        packageName = RemoveUnwantedChar(t_SplitByColon[1]),
+                        packageURL = RemoveUnwantedChar(t_PackageVersion)
                     });
-                } else {
+                }
+                else
+                {
                     string t_PackageVersion = "";
-                    for (int k = 1; k < t_SplitByColon.Length; k++) {
+                    for (int k = 1; k < t_SplitByColon.Length; k++)
+                    {
                         t_PackageVersion += ((k > 1 ? ":" : "") + t_SplitByColon[k]);
                     }
-                    t_CurrentPackageInfo.Add (new PackageInfo () {
-                        packageName = RemoveUnwantedChar (t_SplitByColon[0]),
-                            packageURL = RemoveUnwantedChar (t_PackageVersion)
+                    t_Result.Add(new PackageInfo()
+                    {
+                        packageName = RemoveUnwantedChar(t_SplitByColon[0]),
+                        packageURL = RemoveUnwantedChar(t_PackageVersion)
                     });
                 }
             }
+
+            return t_Result;
+        }
+
+        private async void AddNewRepositoriesToManifestJSON (List<PackageInfo> t_ListOfPackageInfo) {
+
+            string t_ManifestPath                   = GetManifestPath();
+            List<PackageInfo> t_CurrentPackageInfo  = GetPackageInfosFromManifest();
 
             string t_NewManifest = "";
             //WritingPackage
@@ -855,66 +899,17 @@
 
                 t_NewManifest += "\t}\n";
                 t_NewManifest += "}\n";
-                //streamWrite.Write (t_NewManifest);
                 await streamWrite.WriteAsync(t_NewManifest);
             }
-            AssetDatabase.Refresh ();
-
-            await Task.Delay(500);
-            while (IsCompiling())
-                await Task.Delay(100);
-
+            
             UpdatePackageLoadedInfo ();
         }
 
         private async void RemoveRepositoriesFromManifestJSON (List<string> t_ListOfPackageName) {
 
-            string t_StreamingAssetPath = Application.streamingAssetsPath;
-            string[] t_Split = t_StreamingAssetPath.Split ('/');
-            string t_ManifestPath = "";
+            string t_ManifestPath                   = GetManifestPath();
+            List<PackageInfo> t_CurrentPackageInfo  = GetPackageInfosFromManifest();
 
-            int t_NumberOfSplit = t_Split.Length - 2;
-            for (int i = 0; i < t_NumberOfSplit; i++) {
-
-                t_ManifestPath += t_Split[i];
-                t_ManifestPath += "/";
-            }
-            t_ManifestPath += m_NameOfManifestDirectory;
-            t_ManifestPath += "/";
-            t_ManifestPath += "manifest.json"; //"manifest.json"; 
-
-            string t_Result = System.IO.File.ReadAllText (t_ManifestPath);
-
-            //Extracting    :   Package
-            string[] t_SplitByComa = t_Result.Split (',');
-            t_NumberOfSplit = t_SplitByComa.Length;
-            List<PackageInfo> t_CurrentPackageInfo = new List<PackageInfo> ();
-
-            for (int i = 0; i < t_NumberOfSplit; i++) {
-
-                string t_CleanString = RemoveUnwantedChar (t_SplitByComa[i]);
-                string[] t_SplitByColon = t_CleanString.Split (':');
-                if (i == 0) {
-                    string t_PackageVersion = "";
-                    for (int k = 2; k < t_SplitByColon.Length; k++) {
-                        t_PackageVersion += ((k > 2 ? ":" : "") + t_SplitByColon[k]);
-                    }
-                    t_CurrentPackageInfo.Add (new PackageInfo () {
-                        packageName = RemoveUnwantedChar (t_SplitByColon[1]),
-                            packageURL = RemoveUnwantedChar (t_PackageVersion)
-                    });
-                } else {
-                    string t_PackageVersion = "";
-                    for (int k = 1; k < t_SplitByColon.Length; k++) {
-                        t_PackageVersion += ((k > 1 ? ":" : "") + t_SplitByColon[k]);
-                    }
-                    t_CurrentPackageInfo.Add (new PackageInfo () {
-                        packageName = RemoveUnwantedChar (t_SplitByColon[0]),
-                            packageURL = RemoveUnwantedChar (t_PackageVersion)
-                    });
-                }
-
-            }
 
             //WritingPackage
             using (StreamWriter streamWrite = new StreamWriter (t_ManifestPath)) {
@@ -960,31 +955,13 @@
                 t_NewManifest += "\t}\n}\n";
                 await streamWrite.WriteAsync (t_NewManifest);
             }
-            AssetDatabase.Refresh ();
-
-            await Task.Delay(500);
-            while (IsCompiling())
-                await Task.Delay(100);
 
             UpdatePackageLoadedInfo ();
         }
 
         private async void RewriteManifestFile() {
 
-            string t_StreamingAssetPath = Application.streamingAssetsPath;
-            string[] t_Split = t_StreamingAssetPath.Split('/');
-            string t_ManifestPath = "";
-
-            int t_NumberOfSplit = t_Split.Length - 2;
-            for (int i = 0; i < t_NumberOfSplit; i++)
-            {
-
-                t_ManifestPath += t_Split[i];
-                t_ManifestPath += "/";
-            }
-            t_ManifestPath += m_NameOfManifestDirectory;
-            t_ManifestPath += "/";
-            t_ManifestPath += "manifest.json";
+            string t_ManifestPath = GetManifestPath();
 
             //Extracting    :   Package
             string t_Result = File.ReadAllText(t_ManifestPath);
@@ -992,11 +969,6 @@
 
                 await streamWrite.WriteAsync(t_Result);
             }
-            AssetDatabase.Refresh();
-
-            await Task.Delay(500);
-            while (IsCompiling())
-                await Task.Delay(100);
 
             UpdatePackageLoadedInfo();
         }
