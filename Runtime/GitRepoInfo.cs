@@ -139,7 +139,7 @@
 
         public void CheckForUpdate(){
 
-            string t_URL = downloadURL + "/" + nameOfFile + ".json";
+            string t_URL = downloadURL + "/" + nameOfFile;
             DownloadManager.DownloadJsonFile(t_URL, OnJsonDownloadComplete);
         }
 
@@ -156,6 +156,27 @@
 
             string t_JsonString = JsonUtility.ToJson(remoteGitInfos, true);
             UploadManager.UploadJsonFile(t_JsonString, downloadURL, nameOfFile);
+        }
+
+        public void MarkRepositoryWithLatestVersion(string t_NameOfRepository) {
+
+            bool t_IsUpdatedVersion = false;
+            int t_NumberOfLocalGitInfos = gitInfos.Count;
+            int t_NumberOfRemoteGitInfos    = remoteGitInfos.gitInfos.Count;
+            for (int i = 0; i < t_NumberOfLocalGitInfos; i++) {
+
+                for (int j = 0; j < t_NumberOfRemoteGitInfos; j++) {
+
+                    if (gitInfos[i].name == remoteGitInfos.gitInfos[j].name) {
+
+                        gitInfos[i].version = remoteGitInfos.gitInfos[j].version;
+                        t_IsUpdatedVersion = true;
+                        break;
+                    }
+                }
+
+                if (t_IsUpdatedVersion) break;
+            }
         }
 
         #endregion

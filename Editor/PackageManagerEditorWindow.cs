@@ -2,6 +2,7 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Threading.Tasks;
     using UnityEditor;
     using UnityEngine;
 
@@ -544,6 +545,10 @@
             for (int i = 0; i < t_NumberOfGitInfo; i++) {
 
                 m_IsPackageLoaded[i] = IsRepositoryInPackageFolder (GitRepositoryInfo.gitInfos[i].name);
+                if (m_IsPackageLoaded[i]) {
+
+                    GitRepositoryInfo.MarkRepositoryWithLatestVersion(GitRepositoryInfo.gitInfos[i].name);
+                }
             }
         }
         private bool IsRepositoryInAssetFolder (string t_PackageName) {
@@ -755,7 +760,7 @@
 
         #region Configuretion   :   Reading/Writing manifest.json
 
-        private void AddNewRepositoriesToManifestJSON (List<PackageInfo> t_ListOfPackageInfo) {
+        private async void AddNewRepositoriesToManifestJSON (List<PackageInfo> t_ListOfPackageInfo) {
 
             string t_StreamingAssetPath = Application.streamingAssetsPath;
             string[] t_Split = t_StreamingAssetPath.Split ('/');
@@ -850,14 +855,19 @@
 
                 t_NewManifest += "\t}\n";
                 t_NewManifest += "}\n";
-                streamWrite.Write (t_NewManifest);
+                //streamWrite.Write (t_NewManifest);
+                await streamWrite.WriteAsync(t_NewManifest);
             }
             AssetDatabase.Refresh ();
+
+            await Task.Delay(500);
+            while (IsCompiling())
+                await Task.Delay(100);
 
             UpdatePackageLoadedInfo ();
         }
 
-        private void RemoveRepositoriesFromManifestJSON (List<string> t_ListOfPackageName) {
+        private async void RemoveRepositoriesFromManifestJSON (List<string> t_ListOfPackageName) {
 
             string t_StreamingAssetPath = Application.streamingAssetsPath;
             string[] t_Split = t_StreamingAssetPath.Split ('/');
@@ -948,14 +958,18 @@
                 t_NewManifest = new string (t_ConvertionFromStringToChar.ToArray ());
 
                 t_NewManifest += "\t}\n}\n";
-                streamWrite.Write (t_NewManifest);
+                await streamWrite.WriteAsync (t_NewManifest);
             }
             AssetDatabase.Refresh ();
+
+            await Task.Delay(500);
+            while (IsCompiling())
+                await Task.Delay(100);
 
             UpdatePackageLoadedInfo ();
         }
 
-        private void RewriteManifestFile() {
+        private async void RewriteManifestFile() {
 
             string t_StreamingAssetPath = Application.streamingAssetsPath;
             string[] t_Split = t_StreamingAssetPath.Split('/');
@@ -976,9 +990,13 @@
             string t_Result = File.ReadAllText(t_ManifestPath);
             using (StreamWriter streamWrite = new StreamWriter(t_ManifestPath)) {
 
-                streamWrite.Write(t_Result);
+                await streamWrite.WriteAsync(t_Result);
             }
             AssetDatabase.Refresh();
+
+            await Task.Delay(500);
+            while (IsCompiling())
+                await Task.Delay(100);
 
             UpdatePackageLoadedInfo();
         }
@@ -986,6 +1004,8 @@
         #endregion
 
         #region Editor Module
+
+        private bool IsCompiling() { return EditorApplication.isCompiling; }
 
         private void DrawHorizontalLine () {
             EditorGUILayout.LabelField ("", GUI.skin.horizontalSlider);
