@@ -167,9 +167,9 @@ MonoBehaviour:
       description: Prebuild gameplay mechanincs
       unityDependencies: []
       internalDependencies:
-      - displayName: com.faith.data
+      - displayName: Core Library
         version: 0.1.0
-        name: com.faith.data
+        name: com.faith.core
         url: https://github.com/tashfiq103/com.faith.data.git
       - displayName: Gameplay.Service
         version: 0.1.0
@@ -221,7 +221,7 @@ MonoBehaviour:
       internalDependencies:
       - displayName: Data Library
         version: 0.1.0
-        name: com.faith.data
+        name: com.faith.core
         url: https://github.com/tashfiq103/com.faith.data.git
       externalDependencies: []
       repository:

@@ -112,7 +112,12 @@
                 m_IconForDownload = GetTexture ("Icon_Download", "Packages/com.faith.packagemanager");
                 m_IconForUpdate = GetTexture("Icon_Update", "Packages/com.faith.packagemanager");
             }
-            GitRepositoryInfo.CheckForUpdate();
+
+            if (Application.internetReachability != NetworkReachability.NotReachable) {
+
+                GitRepositoryInfo.CheckForUpdate();
+            }
+            
 
             UpdatePackageLoadedInfo ();
 
@@ -181,6 +186,7 @@
         
 
         }
+
         private void DrawHeader () {
             Vector2 t_PanelOriginOfHeaderPanel = new Vector2 (0, 1);
             Rect t_RectTransformOfHeaderPanel = new Rect (
@@ -191,6 +197,7 @@
             );
             GUI.DrawTexture (t_RectTransformOfHeaderPanel, m_BackgroundTextureOfHeader);
         }
+
         private void DrawPackageList () {
             Vector2 t_PanelOriginOfPackageListPanel = new Vector2 (0, 20);
             Rect t_RectTransformOfPackageListPanel = new Rect (
@@ -247,6 +254,7 @@
             EditorGUILayout.EndScrollView ();
             GUILayout.EndArea ();
         }
+
         private void DrawPackageDescription () {
 
             Vector2 t_PanelOriginOfPackageDescriptionPanel = new Vector2 (185, 20);
@@ -395,30 +403,37 @@
                                 else
                                 {
 
-                                    if (!IsFollowingRepositoryHasDependencyOnOtherRepository(m_SelectedPackageIndex))
+                                    if (GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].isNewVersionAvailable)
                                     {
-                                        if (GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].isNewVersionAvailable)
-                                        {
-                                            if (GUILayout.Button("Update")) OnUpdateButtonPressed();
-                                        }
-
-                                        if (GUILayout.Button("Remove")) OnRemoveButtonPressed();
+                                        if (GUILayout.Button("Update")) OnUpdateButtonPressed();
                                     }
-                                    else {
 
-                                        string t_Message = "Please remove the following repository before you remove this one\n";
-                                        string[] t_RepositoryNameWhichHasDependencies = GetListOfRepositoryNameThatDependOnFollowingRepository(m_SelectedPackageIndex).ToArray();
-                                        int t_NumberOfRepository = t_RepositoryNameWhichHasDependencies.Length;
-                                        for (int i = 0; i < t_NumberOfRepository; i++)
-                                        {
-                                            t_Message += t_RepositoryNameWhichHasDependencies[i] + ((i == (t_NumberOfRepository - 1)) ? "" : "\n");
-                                        }
-                                        EditorUtility.DisplayDialog(
-                                            GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].displayName + "' has dependency!",
-                                            t_Message,
-                                            "Got It!"
-                                        );
-                                    }
+                                    if (GUILayout.Button("Remove")) OnRemoveButtonPressed();
+
+                                    //if (!IsFollowingRepositoryHasDependencyOnOtherRepository(m_SelectedPackageIndex))
+                                    //{
+                                    //    if (GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].isNewVersionAvailable)
+                                    //    {
+                                    //        if (GUILayout.Button("Update")) OnUpdateButtonPressed();
+                                    //    }
+
+                                    //    if (GUILayout.Button("Remove")) OnRemoveButtonPressed();
+                                    //}
+                                    //else {
+
+                                    //    string t_Message = "Please remove the following repository before you remove this one\n";
+                                    //    string[] t_RepositoryNameWhichHasDependencies = GetListOfRepositoryNameThatDependOnFollowingRepository(m_SelectedPackageIndex).ToArray();
+                                    //    int t_NumberOfRepository = t_RepositoryNameWhichHasDependencies.Length;
+                                    //    for (int i = 0; i < t_NumberOfRepository; i++)
+                                    //    {
+                                    //        t_Message += t_RepositoryNameWhichHasDependencies[i] + ((i == (t_NumberOfRepository - 1)) ? "" : "\n");
+                                    //    }
+                                    //    EditorUtility.DisplayDialog(
+                                    //        GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].displayName + "' has dependency!",
+                                    //        t_Message,
+                                    //        "Got It!"
+                                    //    );
+                                    //}
                                 }
                             }
                             EditorGUILayout.EndHorizontal();
@@ -758,6 +773,26 @@
         }
 
         private void OnRemoveButtonPressed () {
+
+
+            if (IsFollowingRepositoryHasDependencyOnOtherRepository(m_SelectedPackageIndex))
+            {
+
+                string t_Message = "Please remove the following repository before you remove this one\n";
+                string[] t_RepositoryNameWhichHasDependencies = GetListOfRepositoryNameThatDependOnFollowingRepository(m_SelectedPackageIndex).ToArray();
+                int t_NumberOfRepository = t_RepositoryNameWhichHasDependencies.Length;
+                for (int i = 0; i < t_NumberOfRepository; i++)
+                {
+                    t_Message += t_RepositoryNameWhichHasDependencies[i] + ((i == (t_NumberOfRepository - 1)) ? "" : "\n");
+                }
+                EditorUtility.DisplayDialog(
+                    GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].displayName + "' has dependency!",
+                    t_Message,
+                    "Got It!"
+                );
+
+                return;
+            }
 
             RemoveRepositoriesFromManifestJSON (new List<string> () { GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].name });
         }
