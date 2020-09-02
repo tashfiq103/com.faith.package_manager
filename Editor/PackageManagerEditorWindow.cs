@@ -33,6 +33,7 @@
 
         private Texture2D m_IconForTickMark;
         private Texture2D m_IconForDownload;
+        private Texture2D m_IconForUpdate;
         private Texture2D m_BackgroundTextureOfPackageList;
         private Texture2D m_BackgroundTextureOfPackageDescription;
         private Texture2D m_BackgroundTextureOfHeader;
@@ -42,7 +43,6 @@
         private Vector2 m_ScrollPositionAtPackageDescription;
 
         private string m_NameOfManifestDirectory = "Packages";
-        private string m_DownloadURLOfRemoteJSONFileForRepositoryInfo = "https://faithstudio.org/jsonTest.json";
         private string m_PackageName;
         private string m_RepositoryLink;
 
@@ -54,10 +54,10 @@
 
         #region Public Callback :   Static
 
-        [MenuItem ("FAITH/PackageManager", false, 100)]
+        [MenuItem ("FAITH/FAITH PackageManager", false, 100)]
         public static void ShowWindow () {
 
-            m_PackageManagerEditorWindow = (PackageManagerEditorWindow) GetWindow<PackageManagerEditorWindow> ("Package Manager", typeof (PackageManagerEditorWindow));
+            m_PackageManagerEditorWindow = (PackageManagerEditorWindow) GetWindow<PackageManagerEditorWindow> ("FAITH PackageManager", typeof (PackageManagerEditorWindow));
 
             m_PackageManagerEditorWindow.minSize = new Vector2 (360f, 240f);
             m_PackageManagerEditorWindow.Show ();
@@ -100,16 +100,18 @@
 
                 GitRepositoryInfo = (GitRepoInfo) AssetDatabase.LoadAssetAtPath (AssetDatabase.GUIDToAssetPath (AssetDatabase.FindAssets ("GitRepositoryInfo", new string[] { "Assets/com.faith.packagemanager" }) [0]), typeof (GitRepoInfo));
 
-                m_IconForTickMark = GetTexture ("Icon_TickMark", "Assets/com.faith.packagemanager");
-                m_IconForDownload = GetTexture ("Icon_Download", "Assets/com.faith.packagemanager");
+                m_IconForTickMark   = GetTexture ("Icon_TickMark", "Assets/com.faith.packagemanager");
+                m_IconForDownload   = GetTexture ("Icon_Download", "Assets/com.faith.packagemanager");
+                m_IconForUpdate     = GetTexture("Icon_Update", "Assets/com.faith.packagemanager");
             } else {
 
                 GitRepositoryInfo = (GitRepoInfo) AssetDatabase.LoadAssetAtPath (AssetDatabase.GUIDToAssetPath (AssetDatabase.FindAssets ("GitRepositoryInfo", new string[] { "Packages/com.faith.packagemanager" }) [0]), typeof (GitRepoInfo));
 
                 m_IconForTickMark = GetTexture ("Icon_TickMark", "Packages/com.faith.packagemanager");
                 m_IconForDownload = GetTexture ("Icon_Download", "Packages/com.faith.packagemanager");
+                m_IconForUpdate = GetTexture("Icon_Update", "Packages/com.faith.packagemanager");
             }
-            GitRepositoryInfo.CheckForUpdate(m_DownloadURLOfRemoteJSONFileForRepositoryInfo);
+            GitRepositoryInfo.CheckForUpdate();
 
             UpdatePackageLoadedInfo ();
 
@@ -225,19 +227,19 @@
                         m_SelectedPackageIndex = i;
                     }
 
+                    Texture2D t_SelectedTexture;
+                    if (IsRepositoryInPackageFolder(GitRepositoryInfo.gitInfos[i].name))
+                    {
+                        if (GitRepositoryInfo.gitInfos[i].isNewVersionAvailable) t_SelectedTexture = m_IconForUpdate;
+                        else t_SelectedTexture = m_IconForTickMark;
+                    }
+                    else t_SelectedTexture = m_IconForDownload;
+
                     GUI.Label (new Rect (0, 28 * i, 160, 25), "  " + GitRepositoryInfo.gitInfos[i].displayName, t_GUIStyleForLabel);
                     GUI.Label (
                         new Rect (160, 28.5f * i, 20, 20),
-                        IsRepositoryInPackageFolder (GitRepositoryInfo.gitInfos[i].name) ? m_IconForTickMark : m_IconForDownload);
-                    // GUILayout.BeginHorizontal (GUI.skin.textArea); {
-
-                    //     if (GUILayout.Button (m_GitRepositoryInfo.gitInfos[i].displayName, m_GUIStyleForButtonInPackageList, GUILayout.Height (25))) {
-
-                    //         m_SelectedPackageIndex = i;
-                    //     }
-                    //     GUILayout.Label (m_IsPackageLoaded[i] ? m_IconForTickMark : new Texture2D (1, 1), GUILayout.Width (20), GUILayout.Height (20));
-                    // }
-                    // GUILayout.EndHorizontal ();
+                        t_SelectedTexture);
+                    
 
                 }
             }
@@ -343,6 +345,7 @@
             }
             GUILayout.EndArea ();
         }
+
         private void DrawFooter () {
 
             Vector2 t_PanelOriginOfFooterPanel = new Vector2 (0, Screen.height - 45f);
@@ -384,31 +387,43 @@
                         }
 
                         if (m_IsPackageLoaded[m_SelectedPackageIndex]) {
-                            if (GUILayout.Button (EditorApplication.isCompiling ? "Wait Until Compile" : "Remove")) {
 
-                                if (!EditorApplication.isCompiling) {
+                            EditorGUILayout.BeginHorizontal();
+                            {
+                                if (EditorApplication.isCompiling) EditorGUILayout.LabelField("Wait Until Compile");
+                                else
+                                {
 
-                                    if (!IsFollowingRepositoryHasDependencyOnOtherRepository (m_SelectedPackageIndex)) {
+                                    if (!IsFollowingRepositoryHasDependencyOnOtherRepository(m_SelectedPackageIndex))
+                                    {
+                                        if (GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].isNewVersionAvailable)
+                                        {
+                                            if (GUILayout.Button("Update")) OnUpdateButtonPressed();
+                                        }
 
-                                        OnRemoveButtonPressed ();
-                                    } else {
+                                        if (GUILayout.Button("Remove")) OnRemoveButtonPressed();
+                                    }
+                                    else {
 
                                         string t_Message = "Please remove the following repository before you remove this one\n";
-                                        string[] t_RepositoryNameWhichHasDependencies = GetListOfRepositoryNameThatDependOnFollowingRepository (m_SelectedPackageIndex).ToArray ();
+                                        string[] t_RepositoryNameWhichHasDependencies = GetListOfRepositoryNameThatDependOnFollowingRepository(m_SelectedPackageIndex).ToArray();
                                         int t_NumberOfRepository = t_RepositoryNameWhichHasDependencies.Length;
-                                        for (int i = 0; i < t_NumberOfRepository; i++) {
+                                        for (int i = 0; i < t_NumberOfRepository; i++)
+                                        {
                                             t_Message += t_RepositoryNameWhichHasDependencies[i] + ((i == (t_NumberOfRepository - 1)) ? "" : "\n");
                                         }
-                                        EditorUtility.DisplayDialog (
+                                        EditorUtility.DisplayDialog(
                                             GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].displayName + "' has dependency!",
                                             t_Message,
                                             "Got It!"
                                         );
                                     }
                                 }
-
                             }
+                            EditorGUILayout.EndHorizontal();
+
                         } else {
+
 
                             if (GUILayout.Button (EditorApplication.isCompiling ? "Wait Until Compile" : "Import")) {
                                 if (!EditorApplication.isCompiling)
@@ -711,6 +726,26 @@
             t_URLs.Reverse ();
             AddNewRepositoriesToManifestJSON (t_URLs);
         }
+
+        private void OnUpdateButtonPressed() {
+
+            int t_NumberOfRemoteGitRepositoryInfo = GitRepositoryInfo.remoteGitInfos.gitInfos.Count;
+            for (int i = 0; i < t_NumberOfRemoteGitRepositoryInfo; i++) {
+
+                if (GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].name == GitRepositoryInfo.remoteGitInfos.gitInfos[i].name)
+                {
+                    GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].version = GitRepositoryInfo.remoteGitInfos.gitInfos[i].version;
+                    GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].isNewVersionAvailable = false;
+                    RewriteManifestFile();
+                    return;
+                }
+            }
+
+            Debug.LogError("Repository name mismatched for : " + GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].name + ", on remote repository");
+            
+            
+        }
+
         private void OnRemoveButtonPressed () {
 
             RemoveRepositoriesFromManifestJSON (new List<string> () { GitRepositoryInfo.gitInfos[m_SelectedPackageIndex].name });
@@ -734,10 +769,10 @@
             }
             t_ManifestPath += m_NameOfManifestDirectory;
             t_ManifestPath += "/";
-            t_ManifestPath += "manifest.json"; //"manifest.json"; 
+            t_ManifestPath += "manifest.json";
 
             //Extracting    :   Package
-            string t_Result = System.IO.File.ReadAllText (t_ManifestPath);
+            string t_Result = File.ReadAllText (t_ManifestPath);
             string[] t_SplitByComa = t_Result.Split (',');
             t_NumberOfSplit = t_SplitByComa.Length;
             List<PackageInfo> t_CurrentPackageInfo = new List<PackageInfo> ();
@@ -918,6 +953,34 @@
             AssetDatabase.Refresh ();
 
             UpdatePackageLoadedInfo ();
+        }
+
+        private void RewriteManifestFile() {
+
+            string t_StreamingAssetPath = Application.streamingAssetsPath;
+            string[] t_Split = t_StreamingAssetPath.Split('/');
+            string t_ManifestPath = "";
+
+            int t_NumberOfSplit = t_Split.Length - 2;
+            for (int i = 0; i < t_NumberOfSplit; i++)
+            {
+
+                t_ManifestPath += t_Split[i];
+                t_ManifestPath += "/";
+            }
+            t_ManifestPath += m_NameOfManifestDirectory;
+            t_ManifestPath += "/";
+            t_ManifestPath += "manifest.json";
+
+            //Extracting    :   Package
+            string t_Result = File.ReadAllText(t_ManifestPath);
+            using (StreamWriter streamWrite = new StreamWriter(t_ManifestPath)) {
+
+                streamWrite.Write(t_Result);
+            }
+            AssetDatabase.Refresh();
+
+            UpdatePackageLoadedInfo();
         }
 
         #endregion

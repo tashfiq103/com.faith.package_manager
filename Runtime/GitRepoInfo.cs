@@ -2,7 +2,6 @@
     using System;
     using System.Collections.Generic;
     using UnityEngine;
-    using UnityEditor;
 
     [System.Serializable]
     public class Dependencies {
@@ -50,12 +49,25 @@
 
     [CreateAssetMenu (fileName = "GitRepositoryInfo", menuName = "FAITH/GitRepositoryInfo", order = 1)]
     public class GitRepoInfo : ScriptableObject {
-        
-        [Space(5.0f)]
-        public List<GitInfo>    gitInfos;
-        public RemoteGitInfos   remoteGitInfos;
 
-        #if UNITY_EDITOR
+        #region Public Variables
+
+#if UNITY_EDITOR
+
+        public bool     showDeveloperPanel;
+        public bool     showLocalRepositoryInfo;
+        public string   nameOfFile = "remoteGitRepositoryInfos";
+        public string   downloadURL = "https://faithstudio.org/jsonTest.json";
+
+#endif
+
+        [Space(5.0f)]
+        public List<GitInfo> gitInfos;
+        public RemoteGitInfos remoteGitInfos;
+
+        #endregion
+
+#if UNITY_EDITOR
 
         #region Configuretion
 
@@ -125,13 +137,29 @@
 
         #region Public Callback
 
-        public void CheckForUpdate(string t_URL){
+        public void CheckForUpdate(){
 
+            string t_URL = downloadURL + "/" + nameOfFile + ".json";
             DownloadManager.DownloadJsonFile(t_URL, OnJsonDownloadComplete);
+        }
+
+        public void SaveRespositoryInfoAsJson()
+        {
+            string t_JsonString = JsonUtility.ToJson(remoteGitInfos, true);
+            System.IO.File.WriteAllText(Application.dataPath + "/" + nameOfFile, t_JsonString);
+            UnityEditor.AssetDatabase.Refresh();
+
+            gitInfos = new List<GitInfo>(remoteGitInfos.gitInfos);
+        }
+
+        public void UploadToJsonFileToWebURL() {
+
+            string t_JsonString = JsonUtility.ToJson(remoteGitInfos, true);
+            UploadManager.UploadJsonFile(t_JsonString, downloadURL, nameOfFile);
         }
 
         #endregion
 
-        #endif
+#endif
     }
 }

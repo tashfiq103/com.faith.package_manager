@@ -1,29 +1,35 @@
-﻿using UnityEngine.Events;
-using UnityEngine.Networking;
-using System.Threading.Tasks;
-
-
-public static class DownloadManager
+﻿namespace com.faith.packagemanager
 {
+    using UnityEngine.Events;
+    using UnityEngine.Networking;
+    using System.Threading.Tasks;
 
-    #region Public Callback
 
-    public static async void DownloadJsonFile(string t_URL, UnityAction<string> OnDownloadComplete = null, UnityAction<string> OnDownloadFailed = null){
+    public static class DownloadManager
+    {
 
-        using(var t_NewWebRequest =  UnityWebRequest.Get(t_URL)){
+        #region Public Callback
 
-            t_NewWebRequest.SendWebRequest();
+        public static async void DownloadJsonFile(string t_URL, UnityAction<string> OnDownloadComplete = null, UnityAction<string> OnDownloadFailed = null)
+        {
 
-            while(!t_NewWebRequest.isDone)
-                await Task.Delay(100);
+            using (var t_NewWebRequest = UnityWebRequest.Get(t_URL))
+            {
 
-            if(t_NewWebRequest.isHttpError || t_NewWebRequest.isNetworkError)
-                OnDownloadFailed?.Invoke(t_NewWebRequest.error);
-            else
-                OnDownloadComplete?.Invoke(t_NewWebRequest.downloadHandler.text);
+                t_NewWebRequest.SendWebRequest();
 
+                while (!t_NewWebRequest.isDone)
+                    await Task.Delay(100);
+
+                if (t_NewWebRequest.isHttpError || t_NewWebRequest.isNetworkError)
+                    OnDownloadFailed?.Invoke(t_NewWebRequest.error);
+                else
+                    OnDownloadComplete?.Invoke(t_NewWebRequest.downloadHandler.text);
+
+            }
         }
-    }
 
-    #endregion
+        #endregion
+    }
 }
+

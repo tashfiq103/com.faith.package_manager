@@ -12,7 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1b5539d1f8c19a418bf38fde5ae1178, type: 3}
   m_Name: GitRepositoryInfo
   m_EditorClassIdentifier: 
-  downloadURLForRemoteJsonFile: https://faithstudio.org/jsonTest.json
+  showDeveloperPanel: 1
+  nameOfFile: jsonTest.json
+  downloadURL: https://faithstudio.org/
   gitInfos:
   - isNewVersionAvailable: 1
     name: com.faith.data
@@ -156,12 +158,12 @@ MonoBehaviour:
   remoteGitInfos:
     gitInfos:
     - isNewVersionAvailable: 0
-      name: com.faith.data
-      displayName: Data Library
-      version: 0.1.1
+      name: com.faith.core
+      displayName: Core Library
+      version: 0.1.2
       unity: 2019.4
       author: Muhammad Tashfiqul Bari
-      description: DataLibraray for other tools of faith unity package
+      description: Core features to start any project
       unityDependencies: []
       internalDependencies: []
       externalDependencies: []
