@@ -1,8 +1,7 @@
 {
     "name": "com.faith.packagemanager.Editor",
     "references": [
-        "GUID:115e73b2eb3621f4caf8fd406702fe7d",
-        "GUID:478a2357cc57436488a56e564b08d223"
+        "GUID:115e73b2eb3621f4caf8fd406702fe7d"
     ],
     "includePlatforms": [
         "Editor"
