@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: GitRepositoryInfo
   m_EditorClassIdentifier: 
   showDeveloperPanel: 1
-  showLocalRepositoryInfo: 1
+  showLocalRepositoryInfo: 0
   nameOfFile: remoteGitInfo.json
   downloadURL: https://faithstudio.org/
   gitInfos:
@@ -39,9 +39,9 @@ MonoBehaviour:
     description: Prebuild gameplay mechanincs
     unityDependencies: []
     internalDependencies:
-    - displayName: com.faith.data
+    - displayName: Core Library
       version: 0.1.0
-      name: com.faith.data
+      name: com.faith.core
       url: https://github.com/tashfiq103/com.faith.data.git
     - displayName: Gameplay.Service
       version: 0.1.0
@@ -93,7 +93,7 @@ MonoBehaviour:
     internalDependencies:
     - displayName: Data Library
       version: 0.1.0
-      name: com.faith.data
+      name: com.faith.core
       url: https://github.com/tashfiq103/com.faith.data.git
     externalDependencies: []
     repository:
